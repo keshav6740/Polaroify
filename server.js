@@ -336,6 +336,10 @@ async function readJsonOrText(response) {
   }
 }
 
-app.listen(port, () => {
-  console.log(`Spotify API server listening on http://localhost:${port}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(port, () => {
+    console.log(`Spotify API server listening on http://localhost:${port}`);
+  });
+}
+
+export default app;
