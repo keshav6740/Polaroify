@@ -35,6 +35,9 @@ const els = {
   previewLyrics: document.getElementById("previewLyrics"),
   playerDuration: document.getElementById("playerDuration"),
   playerProgress: document.getElementById("playerProgress"),
+  captionText: document.getElementById("captionText"),
+  locationText: document.getElementById("locationText"),
+  grainIntensity: document.getElementById("grainIntensity"),
   codeOpacity: document.getElementById("codeOpacity"),
   colorTemplates: document.getElementById("colorTemplates"),
   colorTemplatesWrap: document.getElementById("colorTemplatesWrap"),
@@ -50,7 +53,14 @@ const els = {
   toggleCode: document.getElementById("toggleCode"),
   togglePlayer: document.getElementById("togglePlayer"),
   toggleActions: document.getElementById("toggleActions"),
+  toggleCaption: document.getElementById("toggleCaption"),
+  toggleLocation: document.getElementById("toggleLocation"),
+  toggleGrain: document.getElementById("toggleGrain"),
   lyricsBlock: document.getElementById("lyricsBlock"),
+  captionBlock: document.getElementById("captionBlock"),
+  locationBlock: document.getElementById("locationBlock"),
+  previewCaption: document.getElementById("previewCaption"),
+  previewLocation: document.getElementById("previewLocation"),
   spotifyCodeWrap: document.getElementById("spotifyCodeWrap"),
   playerBar: document.getElementById("playerBar"),
   musicActions: document.querySelector(".music-actions"),
@@ -59,6 +69,7 @@ const els = {
   timeLabel: document.getElementById("timeLabel"),
   btnPlayPause: document.getElementById("btnPlayPause"),
   btnLiked: document.getElementById("btnLiked"),
+  grainOverlay: document.getElementById("grainOverlay"),
 };
 
 const state = {
@@ -82,10 +93,16 @@ const DEFAULTS = {
   polaroidColor: "#f5f0e6",
   accentColor: "#0d0d0d",
   fontSelect: "'Space Grotesk', sans-serif",
+  captionText: "",
+  locationText: "",
+  grainIntensity: "0",
   toggleLyrics: true,
   toggleCode: true,
   togglePlayer: true,
   toggleActions: true,
+  toggleCaption: false,
+  toggleLocation: false,
+  toggleGrain: false,
 };
 
 els.searchBtn.addEventListener("click", runSearch);
@@ -355,6 +372,9 @@ function applyCustomizations() {
   const bg = els.polaroidColor.value;
   const accent = els.accentColor.value;
   const font = els.fontSelect.value;
+  const caption = els.captionText.value.trim();
+  const location = els.locationText.value.trim();
+  const grain = Number(els.grainIntensity.value || 0);
   const codeOpacity = Number(els.codeOpacity.value || 55) / 100;
   const useCustom = Boolean(els.useCustomImage.checked && state.customImageUrl);
 
@@ -365,6 +385,8 @@ function applyCustomizations() {
   els.previewLyrics.textContent = previewLyrics;
   els.previewLyrics.title = lyrics || "";
   els.coverArt.src = useCustom ? state.customImageUrl : state.spotifyCoverUrl;
+  els.previewCaption.textContent = caption || "A song memory worth printing.";
+  els.previewLocation.textContent = location || "Somewhere special";
 
   els.poster.style.background = bg;
   els.poster.style.color = accent;
@@ -372,6 +394,7 @@ function applyCustomizations() {
   els.poster.style.boxShadow = "0 14px 36px rgba(0, 0, 0, 0.35)";
   els.timelineFill.style.background = accent;
   els.spotifyCodeWrap.style.opacity = `${codeOpacity}`;
+  els.grainOverlay.style.opacity = `${Math.max(0, Math.min(70, grain)) / 100}`;
   updateSpotifyCode();
 }
 
@@ -393,6 +416,9 @@ function syncPosterVisibility() {
   els.poster.classList.toggle("compact-player", !els.togglePlayer.checked);
   els.musicActions.classList.toggle("reserved-hidden", !els.toggleActions.checked);
   els.poster.classList.toggle("compact-actions", !els.toggleActions.checked);
+  els.captionBlock.classList.toggle("reserved-hidden", !els.toggleCaption.checked);
+  els.locationBlock.classList.toggle("reserved-hidden", !els.toggleLocation.checked);
+  els.grainOverlay.classList.toggle("reserved-hidden", !els.toggleGrain.checked);
 }
 
 function setThemeMode(mode) {
@@ -432,10 +458,16 @@ function resetToDefaults() {
   els.polaroidColor.value = DEFAULTS.polaroidColor;
   els.accentColor.value = DEFAULTS.accentColor;
   els.fontSelect.value = DEFAULTS.fontSelect;
+  els.captionText.value = DEFAULTS.captionText;
+  els.locationText.value = DEFAULTS.locationText;
+  els.grainIntensity.value = DEFAULTS.grainIntensity;
   els.toggleLyrics.checked = DEFAULTS.toggleLyrics;
   els.toggleCode.checked = DEFAULTS.toggleCode;
   els.togglePlayer.checked = DEFAULTS.togglePlayer;
   els.toggleActions.checked = DEFAULTS.toggleActions;
+  els.toggleCaption.checked = DEFAULTS.toggleCaption;
+  els.toggleLocation.checked = DEFAULTS.toggleLocation;
+  els.toggleGrain.checked = DEFAULTS.toggleGrain;
   els.useCustomImage.checked = false;
   setThemeMode("template");
   els.customImageInput.value = "";
@@ -486,10 +518,16 @@ function getCurrentPresetPayload() {
     polaroidColor: els.polaroidColor.value,
     accentColor: els.accentColor.value,
     fontSelect: els.fontSelect.value,
+    captionText: els.captionText.value,
+    locationText: els.locationText.value,
+    grainIntensity: els.grainIntensity.value,
     toggleLyrics: els.toggleLyrics.checked,
     toggleCode: els.toggleCode.checked,
     togglePlayer: els.togglePlayer.checked,
     toggleActions: els.toggleActions.checked,
+    toggleCaption: els.toggleCaption.checked,
+    toggleLocation: els.toggleLocation.checked,
+    toggleGrain: els.toggleGrain.checked,
     useCustomImage: els.useCustomImage.checked,
     themeMode: state.themeMode,
   };
@@ -507,6 +545,9 @@ function applyPresetPayload(preset) {
     "polaroidColor",
     "accentColor",
     "fontSelect",
+    "captionText",
+    "locationText",
+    "grainIntensity",
   ];
   keys.forEach((key) => {
     if (preset[key] !== undefined && els[key]) {
@@ -517,6 +558,9 @@ function applyPresetPayload(preset) {
   els.toggleCode.checked = Boolean(preset.toggleCode);
   els.togglePlayer.checked = Boolean(preset.togglePlayer);
   els.toggleActions.checked = preset.toggleActions === undefined ? true : Boolean(preset.toggleActions);
+  els.toggleCaption.checked = Boolean(preset.toggleCaption);
+  els.toggleLocation.checked = Boolean(preset.toggleLocation);
+  els.toggleGrain.checked = Boolean(preset.toggleGrain);
   els.useCustomImage.checked = Boolean(preset.useCustomImage && state.customImageUrl);
   setThemeMode(preset.themeMode === "custom" ? "custom" : "template");
   syncPosterVisibility();
@@ -605,19 +649,44 @@ async function nativeShare() {
 }
 
 function shareWhatsApp() {
-  const text = encodeURIComponent(
-    `Create your music poster with Polaroify: ${window.location.href}`,
-  );
-  window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
-  setStatus("Opening WhatsApp share.");
+  sharePosterToApp("whatsapp");
 }
 
 async function shareInstagram() {
+  sharePosterToApp("instagram");
+}
+
+async function sharePosterToApp(target) {
+  const shareText = "Created with Polaroify";
+  try {
+    const blob = await renderPosterBlob();
+    if (!blob) throw new Error("Poster image unavailable");
+    const file = new File([blob], "polaroify-poster.png", { type: "image/png" });
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      await navigator.share({
+        title: "Polaroify Poster",
+        text: shareText,
+        files: [file],
+      });
+      setStatus("Poster shared. Pick WhatsApp/Instagram in the share sheet.");
+      return;
+    }
+  } catch {}
+
+  if (target === "whatsapp") {
+    const text = encodeURIComponent(
+      `Created with Polaroify ${window.location.href}`,
+    );
+    window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+    setStatus("WhatsApp opened. Attach downloaded poster manually if needed.");
+    return;
+  }
+
   try {
     await navigator.clipboard.writeText(window.location.href);
-    setStatus("Link copied. Paste it in Instagram story/bio.");
+    setStatus("Link copied. Share image from gallery in Instagram Stories.");
   } catch {
-    setStatus("Could not copy link. Open Instagram and share manually.");
+    setStatus("Open Instagram and share poster manually from your gallery.");
   }
   window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
 }
@@ -633,6 +702,9 @@ async function shareInstagram() {
   "polaroidColor",
   "accentColor",
   "fontSelect",
+  "captionText",
+  "locationText",
+  "grainIntensity",
 ].forEach((key) => {
   els[key].addEventListener("input", () => {
     if (key === "playerDuration" || key === "playerProgress") updatePlayerFromProgress();
@@ -662,10 +734,18 @@ els.colorTemplates.addEventListener("click", (event) => {
   if (!btn) return;
   const bg = btn.getAttribute("data-bg");
   const accent = btn.getAttribute("data-accent");
+  const font = btn.getAttribute("data-font");
+  const grain = btn.getAttribute("data-grain");
   if (!bg || !accent) return;
   setThemeMode("template");
   els.polaroidColor.value = bg;
   els.accentColor.value = accent;
+  if (font) els.fontSelect.value = font;
+  if (grain) {
+    els.grainIntensity.value = grain;
+    els.toggleGrain.checked = Number(grain) > 0;
+  }
+  syncPosterVisibility();
   applyCustomizations();
 });
 
@@ -679,6 +759,15 @@ els.togglePlayer.addEventListener("change", () => {
   syncPosterVisibility();
 });
 els.toggleActions.addEventListener("change", () => {
+  syncPosterVisibility();
+});
+els.toggleCaption.addEventListener("change", () => {
+  syncPosterVisibility();
+});
+els.toggleLocation.addEventListener("change", () => {
+  syncPosterVisibility();
+});
+els.toggleGrain.addEventListener("change", () => {
   syncPosterVisibility();
 });
 
@@ -699,19 +788,28 @@ async function downloadPosterPng() {
   }
   setStatus("Rendering PNG...");
   try {
-    const canvas = await window.html2canvas(els.poster, {
-      backgroundColor: null,
-      useCORS: true,
-      scale: 2,
-    });
+    const blob = await renderPosterBlob();
+    if (!blob) throw new Error("PNG export failed");
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.download = `${slugify(els.previewTitle.textContent || "spotpost")}.png`;
-    link.href = canvas.toDataURL("image/png");
+    link.download = `${slugify(els.previewTitle.textContent || "polaroify")}-polaroid.png`;
+    link.href = url;
     link.click();
-    setStatus("PNG downloaded.");
+    URL.revokeObjectURL(url);
+    setStatus("PNG downloaded (polaroid).");
   } catch {
     setStatus("PNG export failed. Try another cover image and retry.");
   }
+}
+
+async function renderPosterBlob() {
+  if (!window.html2canvas) return null;
+  const canvas = await window.html2canvas(els.poster, {
+    backgroundColor: null,
+    useCORS: true,
+    scale: 2,
+  });
+  return await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
 }
 
 async function readJsonOrText(response) {

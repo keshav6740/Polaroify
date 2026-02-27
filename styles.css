@@ -453,7 +453,9 @@ textarea:focus {
 }
 
 .template-btn span:last-child {
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.15;
+  text-align: center;
 }
 
 .preset-row {
@@ -676,9 +678,11 @@ textarea:focus {
 
 .poster-main h3 {
   margin: 0;
-  font-size: 1.06rem;
+  font-size: 1.08rem;
   line-height: 1.05;
   text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.01em;
 }
 
 .poster-main,
@@ -692,7 +696,8 @@ textarea:focus {
 .poster-main p {
   margin: 0.1rem 0 0;
   color: inherit;
-  opacity: 0.82;
+  opacity: 0.66;
+  font-weight: 500;
 }
 
 .artist-row {
@@ -814,7 +819,7 @@ textarea:focus {
 
 .lyrics-block {
   border: 0;
-  height: 110px;
+  height: 98px;
   overflow: auto;
   padding: 0;
   background: transparent;
@@ -844,7 +849,32 @@ textarea:focus {
   margin: 0;
   line-height: 1.38;
   white-space: pre-wrap;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
+.caption-block,
+.location-block {
+  width: 354px;
+  flex: 0 0 auto;
+}
+
+.caption-block p,
+.location-block p {
+  margin: 0;
+  line-height: 1.28;
+}
+
+.caption-block p {
+  font-size: 0.82rem;
+  font-family: "Caveat", cursive;
+  font-weight: 700;
+}
+
+.location-block p {
+  font-size: 0.72rem;
+  opacity: 0.78;
+  font-weight: 600;
 }
 
 .spotify-code-wrap {
@@ -885,6 +915,19 @@ textarea:focus {
   line-height: 1;
   letter-spacing: 0.01em;
   font-weight: 500;
+}
+
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.12) 0 1px, transparent 1px),
+    radial-gradient(circle at 76% 34%, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px),
+    radial-gradient(circle at 45% 80%, rgba(0, 0, 0, 0.1) 0 1px, transparent 1px);
+  background-size: 3px 3px, 4px 4px, 5px 5px;
+  mix-blend-mode: soft-light;
+  opacity: 0;
 }
 
 @keyframes fadeStep {
@@ -957,6 +1000,8 @@ textarea:focus {
   .player,
   .music-actions,
   .lyrics-block,
+  .caption-block,
+  .location-block,
   .poster-photo-wrap {
     width: min(354px, 82vw);
   }
