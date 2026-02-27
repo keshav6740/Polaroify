@@ -8,6 +8,8 @@ const els = {
   step3Back: document.getElementById("step3Back"),
   copyLinkBtn: document.getElementById("copyLinkBtn"),
   shareNativeBtn: document.getElementById("shareNativeBtn"),
+  shareWhatsappBtn: document.getElementById("shareWhatsappBtn"),
+  shareInstagramBtn: document.getElementById("shareInstagramBtn"),
   wizardProgressFill: document.getElementById("wizardProgressFill"),
   statusText: document.getElementById("statusText"),
   resultsWrap: document.getElementById("resultsWrap"),
@@ -108,6 +110,8 @@ els.loadPresetBtn.addEventListener("click", loadPreset);
 els.deletePresetBtn.addEventListener("click", deletePreset);
 els.copyLinkBtn.addEventListener("click", copyShareLink);
 els.shareNativeBtn.addEventListener("click", nativeShare);
+els.shareWhatsappBtn.addEventListener("click", shareWhatsApp);
+els.shareInstagramBtn.addEventListener("click", shareInstagram);
 els.themeModeTemplate.addEventListener("click", () => setThemeMode("template"));
 els.themeModeCustom.addEventListener("click", () => setThemeMode("custom"));
 
@@ -598,6 +602,24 @@ async function nativeShare() {
   } catch {
     setStatus("Share canceled.");
   }
+}
+
+function shareWhatsApp() {
+  const text = encodeURIComponent(
+    `Create your music poster with Polaroify: ${window.location.href}`,
+  );
+  window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
+  setStatus("Opening WhatsApp share.");
+}
+
+async function shareInstagram() {
+  try {
+    await navigator.clipboard.writeText(window.location.href);
+    setStatus("Link copied. Paste it in Instagram story/bio.");
+  } catch {
+    setStatus("Could not copy link. Open Instagram and share manually.");
+  }
+  window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
 }
 
 [
