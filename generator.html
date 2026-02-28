@@ -88,12 +88,12 @@
                 <div id="colorTemplatesWrap" class="control-row">
                   <label>Color Templates</label>
                   <div id="colorTemplates" class="template-grid">
-                    <button class="template-btn" type="button" data-bg="#eadbc4" data-accent="#21160f" data-font="'Space Grotesk', sans-serif" data-grain="35"><span class="swatch" style="--bg:#eadbc4;--accent:#21160f"></span><span>Vintage</span></button>
-                    <button class="template-btn" type="button" data-bg="#fde7ef" data-accent="#5a2b42" data-font="'Caveat', cursive" data-grain="12"><span class="swatch" style="--bg:#fde7ef;--accent:#5a2b42"></span><span>Pastel Love</span></button>
-                    <button class="template-btn" type="button" data-bg="#131313" data-accent="#f3f3f3" data-font="'Manrope', sans-serif" data-grain="20"><span class="swatch" style="--bg:#131313;--accent:#f3f3f3"></span><span>Dark Aesthetic</span></button>
-                    <button class="template-btn" type="button" data-bg="#6ba8b8" data-accent="#0f2331" data-font="'Space Grotesk', sans-serif" data-grain="45"><span class="swatch" style="--bg:#6ba8b8;--accent:#0f2331"></span><span>Film Grain</span></button>
-                    <button class="template-btn" type="button" data-bg="#f4eee4" data-accent="#4b3a28" data-font="'Satisfy', cursive" data-grain="28"><span class="swatch" style="--bg:#f4eee4;--accent:#4b3a28"></span><span>Scrapbook</span></button>
-                    <button class="template-btn" type="button" data-bg="#2b2a3a" data-accent="#f6d78f" data-font="'Pacifico', cursive" data-grain="25"><span class="swatch" style="--bg:#2b2a3a;--accent:#f6d78f"></span><span>Cassette Tape</span></button>
+                    <button class="template-btn" type="button" data-bg="#eadbc4" data-accent="#21160f" data-font="'Space Grotesk', sans-serif"><span class="swatch" style="--bg:#eadbc4;--accent:#21160f"></span><span>Vintage</span></button>
+                    <button class="template-btn" type="button" data-bg="#fde7ef" data-accent="#5a2b42" data-font="'Caveat', cursive"><span class="swatch" style="--bg:#fde7ef;--accent:#5a2b42"></span><span>Pastel Love</span></button>
+                    <button class="template-btn" type="button" data-bg="#131313" data-accent="#f3f3f3" data-font="'Manrope', sans-serif"><span class="swatch" style="--bg:#131313;--accent:#f3f3f3"></span><span>Dark Aesthetic</span></button>
+                    <button class="template-btn" type="button" data-bg="#6ba8b8" data-accent="#0f2331" data-font="'Space Grotesk', sans-serif"><span class="swatch" style="--bg:#6ba8b8;--accent:#0f2331"></span><span>Film Grain</span></button>
+                    <button class="template-btn" type="button" data-bg="#f4eee4" data-accent="#4b3a28" data-font="'Satisfy', cursive"><span class="swatch" style="--bg:#f4eee4;--accent:#4b3a28"></span><span>Scrapbook</span></button>
+                    <button class="template-btn" type="button" data-bg="#2b2a3a" data-accent="#f6d78f" data-font="'Pacifico', cursive"><span class="swatch" style="--bg:#2b2a3a;--accent:#f6d78f"></span><span>Cassette Tape</span></button>
                   </div>
                 </div>
                 <div id="customColorWrap" class="control-row split two-col custom-color-grid hidden">
@@ -140,27 +140,10 @@
                     <option value="'Satisfy', cursive">Satisfy</option>
                   </select>
                 </div>
-                <div class="control-row split two-col">
-                  <div>
-                    <label for="captionText">Caption / Message</label>
-                    <input id="captionText" type="text" placeholder="A song memory, dedication, or note..." />
-                  </div>
-                  <div>
-                    <label for="locationText">Location Tag</label>
-                    <input id="locationText" type="text" placeholder="Mumbai, India" />
-                  </div>
-                </div>
-                <div class="control-row">
-                  <label for="grainIntensity">Vinyl / Grain Texture</label>
-                  <input id="grainIntensity" type="range" min="0" max="70" value="0" />
-                </div>
                 <div class="toggles">
                   <div class="toggle-item"><span>Show Spotify Code</span><input id="toggleCode" type="checkbox" checked /></div>
                   <div class="toggle-item"><span>Show Play Bar</span><input id="togglePlayer" type="checkbox" checked /></div>
                   <div class="toggle-item"><span>Show Action Buttons</span><input id="toggleActions" type="checkbox" checked /></div>
-                  <div class="toggle-item"><span>Show Caption</span><input id="toggleCaption" type="checkbox" /></div>
-                  <div class="toggle-item"><span>Show Location Tag</span><input id="toggleLocation" type="checkbox" /></div>
-                  <div class="toggle-item"><span>Show Grain Overlay</span><input id="toggleGrain" type="checkbox" /></div>
                 </div>
               </div>
             </div>
@@ -213,9 +196,7 @@
                 <p>Send this page to collaborators or clients.</p>
                 <div class="export-actions">
                   <button id="copyLinkBtn" class="btn btn-secondary" type="button">Copy Page Link</button>
-                  <button id="shareNativeBtn" class="btn btn-secondary" type="button">Native Share</button>
-                  <button id="shareWhatsappBtn" class="btn btn-secondary" type="button">Share on WhatsApp</button>
-                  <button id="shareInstagramBtn" class="btn btn-secondary" type="button">Share on Instagram</button>
+                  <button id="shareSocialBtn" class="btn btn-secondary" type="button">Share to WhatsApp / Instagram</button>
                 </div>
               </section>
             </div>
@@ -269,11 +250,8 @@
               <button id="btnLiked" class="icon-btn liked-btn" type="button" aria-label="Liked">&#10003;</button>
             </div>
             <div id="lyricsBlock" class="lyrics-block"><p id="previewLyrics">Your custom lyrics will appear here.</p></div>
-            <div id="captionBlock" class="caption-block reserved-hidden"><p id="previewCaption"></p></div>
-            <div id="locationBlock" class="location-block reserved-hidden"><p id="previewLocation"></p></div>
             <div id="spotifyCodeWrap" class="spotify-code-wrap"><img id="spotifyCode" alt="Spotify Code" /></div>
             <footer class="poster-footer"><p id="releaseDatePreview">--</p></footer>
-            <div id="grainOverlay" class="grain-overlay reserved-hidden" aria-hidden="true"></div>
           </div>
           <div class="preview-step-nav" data-step-nav="1">
             <button id="step1Next" class="btn" type="button">Next</button>

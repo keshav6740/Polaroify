@@ -7,9 +7,7 @@ const els = {
   step2Next: document.getElementById("step2Next"),
   step3Back: document.getElementById("step3Back"),
   copyLinkBtn: document.getElementById("copyLinkBtn"),
-  shareNativeBtn: document.getElementById("shareNativeBtn"),
-  shareWhatsappBtn: document.getElementById("shareWhatsappBtn"),
-  shareInstagramBtn: document.getElementById("shareInstagramBtn"),
+  shareSocialBtn: document.getElementById("shareSocialBtn"),
   wizardProgressFill: document.getElementById("wizardProgressFill"),
   statusText: document.getElementById("statusText"),
   resultsWrap: document.getElementById("resultsWrap"),
@@ -35,9 +33,6 @@ const els = {
   previewLyrics: document.getElementById("previewLyrics"),
   playerDuration: document.getElementById("playerDuration"),
   playerProgress: document.getElementById("playerProgress"),
-  captionText: document.getElementById("captionText"),
-  locationText: document.getElementById("locationText"),
-  grainIntensity: document.getElementById("grainIntensity"),
   codeOpacity: document.getElementById("codeOpacity"),
   colorTemplates: document.getElementById("colorTemplates"),
   colorTemplatesWrap: document.getElementById("colorTemplatesWrap"),
@@ -53,14 +48,7 @@ const els = {
   toggleCode: document.getElementById("toggleCode"),
   togglePlayer: document.getElementById("togglePlayer"),
   toggleActions: document.getElementById("toggleActions"),
-  toggleCaption: document.getElementById("toggleCaption"),
-  toggleLocation: document.getElementById("toggleLocation"),
-  toggleGrain: document.getElementById("toggleGrain"),
   lyricsBlock: document.getElementById("lyricsBlock"),
-  captionBlock: document.getElementById("captionBlock"),
-  locationBlock: document.getElementById("locationBlock"),
-  previewCaption: document.getElementById("previewCaption"),
-  previewLocation: document.getElementById("previewLocation"),
   spotifyCodeWrap: document.getElementById("spotifyCodeWrap"),
   playerBar: document.getElementById("playerBar"),
   musicActions: document.querySelector(".music-actions"),
@@ -69,7 +57,6 @@ const els = {
   timeLabel: document.getElementById("timeLabel"),
   btnPlayPause: document.getElementById("btnPlayPause"),
   btnLiked: document.getElementById("btnLiked"),
-  grainOverlay: document.getElementById("grainOverlay"),
 };
 
 const state = {
@@ -93,16 +80,10 @@ const DEFAULTS = {
   polaroidColor: "#f5f0e6",
   accentColor: "#0d0d0d",
   fontSelect: "'Space Grotesk', sans-serif",
-  captionText: "",
-  locationText: "",
-  grainIntensity: "0",
   toggleLyrics: true,
   toggleCode: true,
   togglePlayer: true,
   toggleActions: true,
-  toggleCaption: false,
-  toggleLocation: false,
-  toggleGrain: false,
 };
 
 els.searchBtn.addEventListener("click", runSearch);
@@ -126,9 +107,7 @@ els.savePresetBtn.addEventListener("click", savePreset);
 els.loadPresetBtn.addEventListener("click", loadPreset);
 els.deletePresetBtn.addEventListener("click", deletePreset);
 els.copyLinkBtn.addEventListener("click", copyShareLink);
-els.shareNativeBtn.addEventListener("click", nativeShare);
-els.shareWhatsappBtn.addEventListener("click", shareWhatsApp);
-els.shareInstagramBtn.addEventListener("click", shareInstagram);
+els.shareSocialBtn.addEventListener("click", shareSocial);
 els.themeModeTemplate.addEventListener("click", () => setThemeMode("template"));
 els.themeModeCustom.addEventListener("click", () => setThemeMode("custom"));
 
@@ -372,9 +351,6 @@ function applyCustomizations() {
   const bg = els.polaroidColor.value;
   const accent = els.accentColor.value;
   const font = els.fontSelect.value;
-  const caption = els.captionText.value.trim();
-  const location = els.locationText.value.trim();
-  const grain = Number(els.grainIntensity.value || 0);
   const codeOpacity = Number(els.codeOpacity.value || 55) / 100;
   const useCustom = Boolean(els.useCustomImage.checked && state.customImageUrl);
 
@@ -385,8 +361,6 @@ function applyCustomizations() {
   els.previewLyrics.textContent = previewLyrics;
   els.previewLyrics.title = lyrics || "";
   els.coverArt.src = useCustom ? state.customImageUrl : state.spotifyCoverUrl;
-  els.previewCaption.textContent = caption || "A song memory worth printing.";
-  els.previewLocation.textContent = location || "Somewhere special";
 
   els.poster.style.background = bg;
   els.poster.style.color = accent;
@@ -394,7 +368,6 @@ function applyCustomizations() {
   els.poster.style.boxShadow = "0 14px 36px rgba(0, 0, 0, 0.35)";
   els.timelineFill.style.background = accent;
   els.spotifyCodeWrap.style.opacity = `${codeOpacity}`;
-  els.grainOverlay.style.opacity = `${Math.max(0, Math.min(70, grain)) / 100}`;
   updateSpotifyCode();
 }
 
@@ -416,9 +389,6 @@ function syncPosterVisibility() {
   els.poster.classList.toggle("compact-player", !els.togglePlayer.checked);
   els.musicActions.classList.toggle("reserved-hidden", !els.toggleActions.checked);
   els.poster.classList.toggle("compact-actions", !els.toggleActions.checked);
-  els.captionBlock.classList.toggle("reserved-hidden", !els.toggleCaption.checked);
-  els.locationBlock.classList.toggle("reserved-hidden", !els.toggleLocation.checked);
-  els.grainOverlay.classList.toggle("reserved-hidden", !els.toggleGrain.checked);
 }
 
 function setThemeMode(mode) {
@@ -458,16 +428,10 @@ function resetToDefaults() {
   els.polaroidColor.value = DEFAULTS.polaroidColor;
   els.accentColor.value = DEFAULTS.accentColor;
   els.fontSelect.value = DEFAULTS.fontSelect;
-  els.captionText.value = DEFAULTS.captionText;
-  els.locationText.value = DEFAULTS.locationText;
-  els.grainIntensity.value = DEFAULTS.grainIntensity;
   els.toggleLyrics.checked = DEFAULTS.toggleLyrics;
   els.toggleCode.checked = DEFAULTS.toggleCode;
   els.togglePlayer.checked = DEFAULTS.togglePlayer;
   els.toggleActions.checked = DEFAULTS.toggleActions;
-  els.toggleCaption.checked = DEFAULTS.toggleCaption;
-  els.toggleLocation.checked = DEFAULTS.toggleLocation;
-  els.toggleGrain.checked = DEFAULTS.toggleGrain;
   els.useCustomImage.checked = false;
   setThemeMode("template");
   els.customImageInput.value = "";
@@ -508,63 +472,25 @@ function writeStoredPresets(presets) {
 
 function getCurrentPresetPayload() {
   return {
-    posterTitle: els.posterTitle.value,
-    posterArtist: els.posterArtist.value,
-    releaseDate: els.releaseDate.value,
-    lyricsText: els.lyricsText.value,
-    playerDuration: els.playerDuration.value,
-    playerProgress: els.playerProgress.value,
-    codeOpacity: els.codeOpacity.value,
     polaroidColor: els.polaroidColor.value,
     accentColor: els.accentColor.value,
     fontSelect: els.fontSelect.value,
-    captionText: els.captionText.value,
-    locationText: els.locationText.value,
-    grainIntensity: els.grainIntensity.value,
-    toggleLyrics: els.toggleLyrics.checked,
-    toggleCode: els.toggleCode.checked,
-    togglePlayer: els.togglePlayer.checked,
-    toggleActions: els.toggleActions.checked,
-    toggleCaption: els.toggleCaption.checked,
-    toggleLocation: els.toggleLocation.checked,
-    toggleGrain: els.toggleGrain.checked,
-    useCustomImage: els.useCustomImage.checked,
     themeMode: state.themeMode,
   };
 }
 
 function applyPresetPayload(preset) {
   const keys = [
-    "posterTitle",
-    "posterArtist",
-    "releaseDate",
-    "lyricsText",
-    "playerDuration",
-    "playerProgress",
-    "codeOpacity",
     "polaroidColor",
     "accentColor",
     "fontSelect",
-    "captionText",
-    "locationText",
-    "grainIntensity",
   ];
   keys.forEach((key) => {
     if (preset[key] !== undefined && els[key]) {
       els[key].value = String(preset[key]);
     }
   });
-  els.toggleLyrics.checked = Boolean(preset.toggleLyrics);
-  els.toggleCode.checked = Boolean(preset.toggleCode);
-  els.togglePlayer.checked = Boolean(preset.togglePlayer);
-  els.toggleActions.checked = preset.toggleActions === undefined ? true : Boolean(preset.toggleActions);
-  els.toggleCaption.checked = Boolean(preset.toggleCaption);
-  els.toggleLocation.checked = Boolean(preset.toggleLocation);
-  els.toggleGrain.checked = Boolean(preset.toggleGrain);
-  els.useCustomImage.checked = Boolean(preset.useCustomImage && state.customImageUrl);
   setThemeMode(preset.themeMode === "custom" ? "custom" : "template");
-  syncPosterVisibility();
-  updatePlayerFromProgress();
   applyCustomizations();
 }
 
@@ -632,31 +558,11 @@ async function copyShareLink() {
   }
 }
 
-async function nativeShare() {
-  if (!navigator.share) {
-    setStatus("Native share is not supported in this browser.");
-    return;
-  }
-  try {
-    await navigator.share({
-      title: "Polaroify Generator",
-      text: "Create your own Spotify-style polaroid poster.",
-      url: window.location.href,
-    });
-  } catch {
-    setStatus("Share canceled.");
-  }
+async function shareSocial() {
+  sharePosterToApp();
 }
 
-function shareWhatsApp() {
-  sharePosterToApp("whatsapp");
-}
-
-async function shareInstagram() {
-  sharePosterToApp("instagram");
-}
-
-async function sharePosterToApp(target) {
+async function sharePosterToApp() {
   const shareText = "Created with Polaroify";
   try {
     const blob = await renderPosterBlob();
@@ -668,27 +574,17 @@ async function sharePosterToApp(target) {
         text: shareText,
         files: [file],
       });
-      setStatus("Poster shared. Pick WhatsApp/Instagram in the share sheet.");
+      setStatus("Poster shared. Pick WhatsApp or Instagram in the share sheet.");
       return;
     }
   } catch {}
 
-  if (target === "whatsapp") {
-    const text = encodeURIComponent(
-      `Created with Polaroify ${window.location.href}`,
-    );
-    window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
-    setStatus("WhatsApp opened. Attach downloaded poster manually if needed.");
-    return;
-  }
-
   try {
     await navigator.clipboard.writeText(window.location.href);
-    setStatus("Link copied. Share image from gallery in Instagram Stories.");
+    setStatus("Share sheet not available. Link copied; share the downloaded poster on WhatsApp/Instagram.");
   } catch {
-    setStatus("Open Instagram and share poster manually from your gallery.");
+    setStatus("Share sheet not available. Download poster and share it manually.");
   }
-  window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
 }
 
 [
@@ -702,9 +598,6 @@ async function sharePosterToApp(target) {
   "polaroidColor",
   "accentColor",
   "fontSelect",
-  "captionText",
-  "locationText",
-  "grainIntensity",
 ].forEach((key) => {
   els[key].addEventListener("input", () => {
     if (key === "playerDuration" || key === "playerProgress") updatePlayerFromProgress();
@@ -735,16 +628,11 @@ els.colorTemplates.addEventListener("click", (event) => {
   const bg = btn.getAttribute("data-bg");
   const accent = btn.getAttribute("data-accent");
   const font = btn.getAttribute("data-font");
-  const grain = btn.getAttribute("data-grain");
   if (!bg || !accent) return;
   setThemeMode("template");
   els.polaroidColor.value = bg;
   els.accentColor.value = accent;
   if (font) els.fontSelect.value = font;
-  if (grain) {
-    els.grainIntensity.value = grain;
-    els.toggleGrain.checked = Number(grain) > 0;
-  }
   syncPosterVisibility();
   applyCustomizations();
 });
@@ -759,15 +647,6 @@ els.togglePlayer.addEventListener("change", () => {
   syncPosterVisibility();
 });
 els.toggleActions.addEventListener("change", () => {
-  syncPosterVisibility();
-});
-els.toggleCaption.addEventListener("change", () => {
-  syncPosterVisibility();
-});
-els.toggleLocation.addEventListener("change", () => {
-  syncPosterVisibility();
-});
-els.toggleGrain.addEventListener("change", () => {
   syncPosterVisibility();
 });
 
