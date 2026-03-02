@@ -691,29 +691,6 @@ button {
   opacity: 1;
 }
 
-.feature-hero-card {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 1rem;
-  align-items: start;
-  background:
-    radial-gradient(ellipse 60% 80% at 10% 20%, rgba(255, 107, 43, 0.08), transparent 50%),
-    var(--surface);
-}
-
-.feature-hero-card .feature-icon {
-  font-size: 2rem;
-}
-
-.feature-hero-card h3 {
-  grid-column: 2;
-}
-
-.feature-hero-card p {
-  grid-column: 2;
-}
-
 .feature-icon {
   font-size: 1.6rem;
   margin-bottom: 0.6rem;
@@ -899,9 +876,6 @@ button {
     grid-template-columns: 1fr 1fr;
   }
 
-  .feature-hero-card {
-    grid-column: 1 / -1;
-  }
 
   .process-steps {
     flex-direction: column;
@@ -945,22 +919,6 @@ button {
 
   .features-grid {
     grid-template-columns: 1fr;
-  }
-
-  .feature-hero-card {
-    grid-template-columns: 1fr;
-  }
-
-  .feature-hero-card .feature-icon {
-    font-size: 1.6rem;
-  }
-
-  .feature-hero-card h3 {
-    grid-column: 1;
-  }
-
-  .feature-hero-card p {
-    grid-column: 1;
   }
 
   .hero-chips {
