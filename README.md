@@ -21,6 +21,7 @@ Turn songs into collectible polaroid-style posters.
 - Customize colors, typography, visibility, and image fit.
 - Choose lyrics preview length (3 / 4 / 5 lines).
 - Export as high-quality PNG (free).
+- Includes launch-ready basics: health endpoint, robots/sitemap, privacy and terms pages.
 
 ## Tech Stack
 
@@ -37,7 +38,13 @@ Turn songs into collectible polaroid-style posters.
    - `SPOTIFY_CLIENT_SECRET`
 3. Run in dev:
    `npm run dev`
-4. Open the local URL shown in terminal (usually `http://localhost:5173`).
+4. Open the local URL shown in terminal (usually `http://localhost:8787`).
+
+## Operational Endpoints
+
+- Health check: `GET /api/health`
+- Analytics events: `POST /api/events`
+- Legal pages: `/privacy.html`, `/terms.html` (also `/privacy`, `/terms`)
 
 ## Authentication Model
 
@@ -50,3 +57,4 @@ Turn songs into collectible polaroid-style posters.
 - Spotify preview audio is not guaranteed for every track (`preview_url` may be null).
 - Spotify code image is generated from the selected Spotify URI.
 - If lyrics are unavailable from one provider, fallback providers are used.
+

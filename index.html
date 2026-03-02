@@ -5,9 +5,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#050507" />
-  <title>Polaroify — Turn Songs Into Collectible Polaroids</title>
+  <title>Polaroify - Turn Songs Into Collectible Polaroids</title>
   <meta name="description"
     content="Search any Spotify track, design a stunning polaroid card, and export a print-ready PNG. The ultimate music poster generator." />
+  <meta name="robots" content="index,follow" />
+  <meta property="og:title" content="Polaroify - Turn Songs Into Collectible Polaroids" />
+  <meta property="og:description"
+    content="Search Spotify songs and albums, customize poster layouts, and export print-ready PNGs." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://polaroify.vercel.app/" />
+  <meta property="og:image" content="https://polaroify.vercel.app/polaroify.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Polaroify - Music Poster Studio" />
+  <meta name="twitter:description"
+    content="Create clean, premium song and album posters from Spotify data." />
+  <meta name="twitter:image" content="https://polaroify.vercel.app/polaroify.png" />
+  <link rel="canonical" href="https://polaroify.vercel.app/" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script>
+    (function () {
+      try {
+        var key = "spotpost_theme_v1";
+        var saved = localStorage.getItem(key);
+        var theme = (saved === "light" || saved === "dark")
+          ? saved
+          : ((window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (_e) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -33,6 +61,11 @@
       <div class="nav-links">
         <a href="#features">Features</a>
         <a href="#process">How It Works</a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">
+          <span class="theme-toggle-orb" aria-hidden="true"></span>
+          <span class="theme-toggle-label">Theme</span>
+          <span class="theme-toggle-value">Dark</span>
+        </button>
         <a class="nav-cta" href="/generator.html">Open Studio →</a>
       </div>
     </nav>
@@ -250,9 +283,11 @@
         </svg>
       </a>
       <p class="footer-note">Free to use · No sign-up required</p>
+      <p class="footer-note"><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
     </footer>
+    <script type="module" src="./theme.js"></script>
     <script>
-            (function () {
+      (function () {
         const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
         const revealEls = document.querySelectorAll('[data-reveal]');
@@ -334,9 +369,30 @@
         window.addEventListener('scroll', () => {
           if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 60);
         }, { passive: true });
+
+        const track = (event, payload) => {
+          const body = JSON.stringify({ event, payload: payload || {} });
+          if (navigator.sendBeacon) {
+            const blob = new Blob([body], { type: 'application/json' });
+            navigator.sendBeacon('/api/events', blob);
+            return;
+          }
+          fetch('/api/events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body,
+            keepalive: true
+          }).catch(() => { });
+        };
+
+        document.querySelectorAll('a[href="/generator.html"]').forEach((link) => {
+          link.addEventListener('click', () => track('landing_open_studio_click', { source: 'landing' }));
+        });
       })();
     </script>
 </body>
 
 </html>
+
+
 

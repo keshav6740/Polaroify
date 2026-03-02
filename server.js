@@ -7,12 +7,32 @@ import crypto from "crypto";
 const app = express();
 const port = process.env.PORT || 8787;
 app.use(express.json({ limit: "35mb" }));
+const projectRoot = process.cwd();
+app.use(express.static(projectRoot));
+
+app.get("/", (_req, res) => {
+  res.sendFile(path.join(projectRoot, "index.html"));
+});
+
+app.get("/generator", (_req, res) => {
+  res.sendFile(path.join(projectRoot, "generator.html"));
+});
+
+app.get("/privacy", (_req, res) => {
+  res.sendFile(path.join(projectRoot, "privacy.html"));
+});
+
+app.get("/terms", (_req, res) => {
+  res.sendFile(path.join(projectRoot, "terms.html"));
+});
 
 let cachedToken = "";
 let tokenExpiresAt = 0;
 const tokenCachePath = path.join(os.tmpdir(), "spotpost_spotify_token.json");
 const dataDir = path.join(os.tmpdir(), "spotpost-data");
 const ordersDbPath = path.join(dataDir, "order-snapshots.db.json");
+const analyticsDbPath = path.join(dataDir, "analytics-events.db.json");
+const APP_BASE_URL = process.env.APP_BASE_URL || "https://polaroify.vercel.app";
 
 function ensureDataDir() {
   if (!fs.existsSync(dataDir)) {
@@ -42,6 +62,85 @@ function writeOrderDb(db) {
   fs.writeFileSync(tmpPath, JSON.stringify(db, null, 2), "utf8");
   fs.renameSync(tmpPath, ordersDbPath);
 }
+
+function readAnalyticsDb() {
+  ensureDataDir();
+  if (!fs.existsSync(analyticsDbPath)) {
+    return { items: [] };
+  }
+  try {
+    const raw = fs.readFileSync(analyticsDbPath, "utf8");
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return { items: [] };
+    if (!Array.isArray(parsed.items)) return { items: [] };
+    return parsed;
+  } catch {
+    return { items: [] };
+  }
+}
+
+function writeAnalyticsDb(db) {
+  ensureDataDir();
+  const tmpPath = `${analyticsDbPath}.tmp`;
+  fs.writeFileSync(tmpPath, JSON.stringify(db, null, 2), "utf8");
+  fs.renameSync(tmpPath, analyticsDbPath);
+}
+
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  const start = Date.now();
+  res.on("finish", () => {
+    const ms = Date.now() - start;
+    if (req.path.startsWith("/api/")) {
+      const level = res.statusCode >= 400 ? "WARN" : "INFO";
+      console.log(`${new Date().toISOString()} ${level} ${req.method} ${req.originalUrl} ${res.statusCode} ${ms}ms`);
+    }
+  });
+  next();
+});
+
+app.get("/api/health", (_req, res) => {
+  return res.json({
+    ok: true,
+    service: "spotpost-api",
+    time: new Date().toISOString(),
+    uptimeSec: Math.round(process.uptime()),
+    baseUrl: APP_BASE_URL,
+  });
+});
+
+app.post("/api/events", (req, res) => {
+  try {
+    const event = String(req.body?.event || "").trim().toLowerCase();
+    const payload = req.body?.payload && typeof req.body.payload === "object" ? req.body.payload : {};
+    if (!event || event.length > 72) {
+      return res.status(400).json({ error: { message: "Invalid event name." } });
+    }
+
+    const db = readAnalyticsDb();
+    db.items.push({
+      event,
+      payload,
+      createdAt: new Date().toISOString(),
+      userAgent: String(req.headers["user-agent"] || ""),
+      referrer: String(req.headers.referer || ""),
+      ip: String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || ""),
+    });
+    if (db.items.length > 5000) {
+      db.items = db.items.slice(-5000);
+    }
+    writeAnalyticsDb(db);
+    return res.json({ ok: true });
+  } catch (error) {
+    return res.status(500).json({
+      error: {
+        message: error instanceof Error ? error.message : "Could not save analytics event.",
+      },
+    });
+  }
+});
 
 app.post("/api/order-snapshots", (req, res) => {
   try {
@@ -209,6 +308,81 @@ app.get("/api/search", async (req, res) => {
     }
 
     return res.json(payload.data);
+  } catch (error) {
+    return res.status(500).json({
+      error: {
+        message: error instanceof Error ? error.message : "Unexpected server error.",
+      },
+    });
+  }
+});
+
+app.get("/api/albums/:id/tracks", async (req, res) => {
+  try {
+    const albumId = String(req.params.id || "").trim();
+    if (!albumId) {
+      return res.status(400).json({ error: { message: "Missing album id." } });
+    }
+
+    const token = await getAccessToken();
+    const items = [];
+    let offset = 0;
+    const limit = 50;
+    let total = 0;
+
+    while (true) {
+      const url = new URL(`https://api.spotify.com/v1/albums/${encodeURIComponent(albumId)}/tracks`);
+      url.searchParams.set("limit", String(limit));
+      url.searchParams.set("offset", String(offset));
+      url.searchParams.set("market", "US");
+
+      const spotifyResponse = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const payload = await readJsonOrText(spotifyResponse);
+      if (!spotifyResponse.ok) {
+        if (payload.data) {
+          return res.status(spotifyResponse.status).json(payload.data);
+        }
+        return res.status(spotifyResponse.status).json({
+          error: {
+            message:
+              payload.text || `Spotify request failed with ${spotifyResponse.status}.`,
+          },
+        });
+      }
+
+      const data = payload.data;
+      if (!data || !Array.isArray(data.items)) {
+        return res.status(502).json({
+          error: {
+            message: "Spotify returned an invalid album tracklist response.",
+          },
+        });
+      }
+
+      total = Number(data.total) || total;
+      items.push(...data.items);
+      offset += data.items.length;
+
+      if (!data.next || data.items.length === 0) break;
+    }
+
+    const normalized = items.map((track) => ({
+      id: track.id || "",
+      name: track.name || "",
+      track_number: Number(track.track_number) || 0,
+      disc_number: Number(track.disc_number) || 1,
+      duration_ms: Number(track.duration_ms) || 0,
+    }));
+
+    return res.json({
+      items: normalized,
+      total: total || normalized.length,
+    });
   } catch (error) {
     return res.status(500).json({
       error: {

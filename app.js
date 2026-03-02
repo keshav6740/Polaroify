@@ -38,9 +38,16 @@ const els = {
   lyricsLineCount: document.getElementById("lyricsLineCount"),
   lyricsText: document.getElementById("lyricsText"),
   lyricsFitHint: document.getElementById("lyricsFitHint"),
+  tracklistCount: document.getElementById("tracklistCount"),
+  tracklistStyle: document.getElementById("tracklistStyle"),
+  tracklistSpacing: document.getElementById("tracklistSpacing"),
+  tracklistAlign: document.getElementById("tracklistAlign"),
+  tracklistFontSize: document.getElementById("tracklistFontSize"),
   previewLyrics: document.getElementById("previewLyrics"),
+  previewTracklist: document.getElementById("previewTracklist"),
   playerDuration: document.getElementById("playerDuration"),
   playerProgress: document.getElementById("playerProgress"),
+  posterLayout: document.getElementById("posterLayout"),
   codeOpacity: document.getElementById("codeOpacity"),
   colorTemplates: document.getElementById("colorTemplates"),
   colorTemplatesWrap: document.getElementById("colorTemplatesWrap"),
@@ -51,16 +58,29 @@ const els = {
   accentColor: document.getElementById("accentColor"),
   customImageInput: document.getElementById("customImageInput"),
   useCustomImage: document.getElementById("useCustomImage"),
+  imageEditorWrap: document.getElementById("imageEditorWrap"),
+  imageEditorCanvas: document.getElementById("imageEditorCanvas"),
+  imageScale: document.getElementById("imageScale"),
+  imageRotate: document.getElementById("imageRotate"),
+  imageOffsetX: document.getElementById("imageOffsetX"),
+  imageOffsetY: document.getElementById("imageOffsetY"),
+  resetImageAdjustmentsBtn: document.getElementById("resetImageAdjustmentsBtn"),
   imageFit: document.getElementById("imageFit"),
   fontSelect: document.getElementById("fontSelect"),
   contrastWarning: document.getElementById("contrastWarning"),
   toggleLyrics: document.getElementById("toggleLyrics"),
+  toggleTracklist: document.getElementById("toggleTracklist"),
+  toggleAutoCleanTitle: document.getElementById("toggleAutoCleanTitle"),
+  toggleRuntime: document.getElementById("toggleRuntime"),
+  toggleFadeBottom: document.getElementById("toggleFadeBottom"),
   toggleCode: document.getElementById("toggleCode"),
   togglePlayer: document.getElementById("togglePlayer"),
   toggleActions: document.getElementById("toggleActions"),
   toggleDate: document.getElementById("toggleDate"),
   lyricsBlock: document.getElementById("lyricsBlock"),
+  tracklistBlock: document.getElementById("tracklistBlock"),
   spotifyCodeWrap: document.getElementById("spotifyCodeWrap"),
+  posterFadeOverlay: document.getElementById("posterFadeOverlay"),
   playerBar: document.getElementById("playerBar"),
   musicActions: document.querySelector(".music-actions"),
   spotifyCode: document.getElementById("spotifyCode"),
@@ -75,10 +95,21 @@ const state = {
   codeUri: "",
   codeFallbackStep: 0,
   codeCandidates: [],
+  codeCacheKey: "",
   isPlayingVisual: false,
   likedVisual: true,
   spotifyCoverUrl: "",
+  customImageSourceUrl: "",
   customImageUrl: "",
+  customImageElement: null,
+  customImageElementSource: "",
+  customImageTransform: {
+    scale: 1,
+    rotate: 0,
+    offsetX: 0,
+    offsetY: 0,
+  },
+  albumTracks: [],
   currentStep: 1,
   themeMode: "template",
 };
@@ -102,12 +133,26 @@ const DEFAULTS = {
   polaroidColor: "#f5f0e6",
   accentColor: "#0d0d0d",
   fontSelect: "'Space Grotesk', sans-serif",
+  posterLayout: "standard",
   lyricsLineCount: "3",
+  tracklistCount: "10",
+  tracklistStyle: "numbered",
+  tracklistSpacing: "1.15",
+  tracklistAlign: "left",
+  tracklistFontSize: "0.71",
   toggleLyrics: true,
+  toggleTracklist: true,
+  toggleAutoCleanTitle: false,
+  toggleRuntime: true,
+  toggleFadeBottom: false,
   toggleCode: true,
-  togglePlayer: true,
-  toggleActions: true,
+  togglePlayer: false,
+  toggleActions: false,
   toggleDate: true,
+  imageScale: "1",
+  imageRotate: "0",
+  imageOffsetX: "0",
+  imageOffsetY: "0",
 };
 
 els.searchBtn.addEventListener("click", runSearch);
@@ -124,7 +169,7 @@ els.ownerOrderId?.addEventListener("keydown", (event) => {
 });
 els.step1Next.addEventListener("click", () => {
   if (!state.selected) {
-    setStatus("Select a song first to continue.");
+    setStatus("Select a track or album first to continue.");
     return;
   }
   goToStep(2);
@@ -164,6 +209,7 @@ async function runSearch() {
 
   let type = els.searchType.value;
   if (type === "both") type = "track,album";
+  trackEvent("search_started", { type, qLen: q.length });
 
   setStatus("Searching Spotify...");
   els.resultsGrid.innerHTML = "";
@@ -198,9 +244,11 @@ async function runSearch() {
     }
 
     renderResults(combined);
+    trackEvent("search_results", { type, count: combined.length });
     setStatus(`Found ${combined.length} result(s). Pick one.`);
   } catch (err) {
     console.warn("Search error:", err);
+    trackEvent("search_failed", { type });
     setStatus("Network error while searching Spotify.");
   }
 }
@@ -242,13 +290,16 @@ async function selectItem(item) {
   const cover = isTrack ? item.album?.images?.[0]?.url : item.images?.[0]?.url;
   const uri = item.uri || "";
   const isExplicit = isTrack && item.explicit === true;
+  const albumId = isTrack ? item.album?.id : item.id;
+  trackEvent("result_selected", { kind: isTrack ? "track" : "album" });
 
   state.selected = item;
   state.codeUri = uri;
   state.spotifyCoverUrl = cover || "";
+  state.albumTracks = [];
   els.playerProgress.value = "0";
   els.coverArt.src = state.spotifyCoverUrl;
-  els.previewTitle.textContent = title;
+  els.previewTitle.textContent = formatPosterTitle(title);
   els.previewArtist.textContent = artists;
   els.explicitBadge.classList.toggle("hidden", !isExplicit);
   els.posterTitle.value = title;
@@ -265,21 +316,65 @@ async function selectItem(item) {
   updatePlayerFromProgress();
 
   collapseResults();
-  setStatus(`${isTrack ? "Track" : "Album"} selected. Loading lyrics...`);
+  setStatus(
+    isTrack ? "Track selected. Loading lyrics..." : "Album selected. Loading tracklist...",
+  );
 
   if (isTrack) {
+    setLyricsPanelEnabled(true);
+    els.toggleLyrics.checked = true;
     await fetchAndSetLyrics(title, artists);
     setStatus(
       `Track selected. Duration auto-set to ${els.playerDuration.value}s from Spotify.`,
     );
   } else {
+    setLyricsPanelEnabled(false);
+    els.toggleLyrics.checked = false;
     els.lyricsText.value = "";
     els.previewLyrics.textContent = "No default lyrics for albums. Add your own text.";
-    setStatus("Album selected. Duration remains editable.");
+    await fetchAndSetAlbumTracks(albumId, title);
   }
 
   applyCustomizations();
   els.step1Next.disabled = false;
+}
+
+async function fetchAndSetAlbumTracks(albumId, albumTitle = "Album") {
+  const cleanId = String(albumId || "").trim();
+  if (!cleanId) {
+    state.albumTracks = [];
+    setStatus("Album selected, but tracklist could not be loaded.");
+    return;
+  }
+
+  try {
+    const url = new URL(`/api/albums/${encodeURIComponent(cleanId)}/tracks`, window.location.origin);
+    const response = await fetch(url.toString(), { headers: { Accept: "application/json" } });
+    const { data, text } = await readJsonOrText(response);
+
+    if (!response.ok || !Array.isArray(data?.items)) {
+      state.albumTracks = [];
+      setStatus(data?.error?.message || text || "Could not load album tracklist.");
+      return;
+    }
+
+    state.albumTracks = data.items
+      .map((track) => ({
+        name: String(track?.name || "").trim(),
+        duration_ms: Number(track?.duration_ms) || 0,
+        track_number: Number(track?.track_number) || 0,
+        disc_number: Number(track?.disc_number) || 1,
+      }))
+      .filter((track) => track.name);
+
+    setStatus(
+      `${albumTitle} selected. Loaded ${state.albumTracks.length} track(s). Customize tracklist in Design tab.`,
+    );
+  } catch (err) {
+    console.warn("Album tracklist fetch error:", err);
+    state.albumTracks = [];
+    setStatus("Could not fetch album tracklist.");
+  }
 }
 
 async function fetchAndSetLyrics(trackName, artistName) {
@@ -327,10 +422,11 @@ function updatePlayerFromProgress() {
   els.timeLabel.textContent = `${formatTime(currentSec)} / ${formatTime(duration)}`;
 }
 
-function updateSpotifyCode() {
+function updateSpotifyCode(force = false) {
   if (!state.codeUri) {
     els.spotifyCode.removeAttribute("src");
     state.codeCandidates = [];
+    state.codeCacheKey = "";
     return;
   }
 
@@ -342,6 +438,11 @@ function updateSpotifyCode() {
   const primaryBars = darkBg ? "white" : "black";
   const altBg = darkBg ? "000000" : "F5F0E6";
   const altBars = primaryBars;
+  const cacheKey = `${raw}|${primaryBg}|${primaryBars}|${altBg}|${altBars}`;
+  if (!force && state.codeCacheKey === cacheKey && state.codeCandidates.length) {
+    return;
+  }
+
   state.codeCandidates = [
     `/api/spotify-code?uri=${encoded}&bg=${primaryBg}&bars=${primaryBars}`,
     `/api/spotify-code?uri=${encoded}&bg=${altBg}&bars=${altBars}`,
@@ -351,6 +452,7 @@ function updateSpotifyCode() {
     `https://scannables.scdn.co/uri/plain/png/${altBg}/${altBars}/640/${raw}`,
   ];
 
+  state.codeCacheKey = cacheKey;
   state.codeFallbackStep = 0;
   els.spotifyCodeWrap.style.display = "";
   els.spotifyCode.src = state.codeCandidates[0];
@@ -382,6 +484,11 @@ function applyCustomizations() {
   const date = els.releaseDate.value.trim();
   const lyrics = els.lyricsText.value.trim();
   const lyricsLineCount = Number.parseInt(els.lyricsLineCount?.value || "3", 10);
+  const posterLayout = els.posterLayout?.value || "standard";
+  const tracklistStyle = els.tracklistStyle?.value || "numbered";
+  const tracklistAlign = els.tracklistAlign?.value || "left";
+  const tracklistSpacing = Number.parseFloat(els.tracklistSpacing?.value || "1.15");
+  const tracklistFontSize = Number.parseFloat(els.tracklistFontSize?.value || "0.71");
   const bg = els.polaroidColor.value;
   const accent = els.accentColor.value;
   const font = els.fontSelect.value;
@@ -389,19 +496,34 @@ function applyCustomizations() {
   const useCustom = Boolean(els.useCustomImage.checked && state.customImageUrl);
   const fitMode = els.imageFit?.value || "cover";
 
-  if (title) els.previewTitle.textContent = title;
+  const displayTitle = els.toggleAutoCleanTitle?.checked ? cleanPosterTitle(title) : title;
+  if (displayTitle) els.previewTitle.textContent = formatPosterTitle(displayTitle);
   if (artist) els.previewArtist.textContent = artist;
+  applyTitleMetrics(displayTitle);
   els.releaseDatePreview.textContent = formatReleaseDate(date || "--");
   const previewLyrics = formatLyricsPreview(lyrics, lyricsLineCount);
   els.previewLyrics.textContent = previewLyrics;
   els.previewLyrics.title = lyrics || "";
   updateLyricsFitHint(lyrics, lyricsLineCount);
+  renderTracklistPreview();
   els.coverArt.src = useCustom ? state.customImageUrl : state.spotifyCoverUrl;
+  if (useCustom) els.coverArt.style.objectPosition = "center";
   els.coverArt.style.objectFit = fitMode;
 
   els.poster.style.background = bg;
   els.poster.style.color = accent;
   els.poster.style.fontFamily = font;
+  els.poster.setAttribute("data-layout", posterLayout);
+  els.poster.classList.toggle("album-selected", state.selected?.__kind === "album");
+  els.poster.classList.toggle("runtime-hidden", !Boolean(els.toggleRuntime?.checked));
+  els.poster.classList.toggle("fade-bottom-enabled", Boolean(els.toggleFadeBottom?.checked));
+  els.poster.style.setProperty("--fade-bottom-color", hexToRgba(bg, 0.96));
+  els.poster.style.setProperty("--tracklist-line-height", String(Math.max(0.9, Math.min(1.8, tracklistSpacing))));
+  els.poster.style.setProperty("--tracklist-align", tracklistAlign);
+  els.poster.style.setProperty("--tracklist-font-size", `${Math.max(0.5, Math.min(1.1, tracklistFontSize))}rem`);
+  els.poster.setAttribute("data-tracklist-style", tracklistStyle);
+  els.poster.classList.toggle("tracklist-align-center", tracklistAlign === "center");
+  els.poster.classList.toggle("tracklist-align-right", tracklistAlign === "right");
   els.poster.style.boxShadow = "0 14px 36px rgba(0, 0, 0, 0.35)";
   els.timelineFill.style.background = accent;
   els.spotifyCodeWrap.style.opacity = `${codeOpacity}`;
@@ -413,7 +535,38 @@ function applyCustomizations() {
     els.contrastWarning.classList.toggle("hidden", ratio >= 3.0);
   }
 
+  syncRuntimeToggleState();
+  syncPosterVisibility();
   updateSpotifyCode();
+}
+
+function formatPosterTitle(title) {
+  const raw = String(title || "").replace(/\s+/g, " ").trim();
+  if (raw.length <= 64) return raw;
+  return `${raw.slice(0, 61).trimEnd()}...`;
+}
+
+function cleanPosterTitle(input) {
+  let title = String(input || "").trim();
+  if (!title) return title;
+
+  title = title
+    .replace(/\[(deluxe|expanded|anniversary|remaster|remastered|bonus|live|mono|stereo)[^\]]*\]/gi, "")
+    .replace(/\((deluxe|expanded|anniversary|remaster|remastered|bonus|live|mono|stereo)[^)]*\)/gi, "")
+    .replace(/\s+-\s+(deluxe|expanded|anniversary|remaster|remastered|bonus|live).*/gi, "")
+    .replace(/\s+(feat\.?|ft\.?)\s+.+$/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  return title || String(input || "").trim();
+}
+
+function applyTitleMetrics(title) {
+  const len = String(title || "").trim().length;
+  const isLong = len >= 28;
+  const isVeryLong = len >= 44;
+  els.poster.classList.toggle("title-long", isLong);
+  els.poster.classList.toggle("title-very-long", isVeryLong);
 }
 
 function formatLyricsPreview(lyrics, maxLines = 3) {
@@ -426,6 +579,54 @@ function formatLyricsPreview(lyrics, maxLines = 3) {
     .filter(Boolean);
   if (lines.length <= limit) return lines.join("\n");
   return `${lines.slice(0, limit).join("\n")}\n...`;
+}
+
+function renderTracklistPreview() {
+  if (!els.previewTracklist || !els.tracklistBlock) return;
+
+  const tracks = Array.isArray(state.albumTracks) ? state.albumTracks : [];
+  const showTracklist = Boolean(els.toggleTracklist?.checked) && tracks.length > 0;
+  els.poster.classList.toggle("has-tracklist", showTracklist);
+
+  if (!showTracklist) {
+    els.poster.style.setProperty("--tracklist-columns", "1");
+    els.poster.classList.remove("tracklist-columns-2");
+    els.previewTracklist.innerHTML = "";
+    return;
+  }
+
+  const requestedCount = String(els.tracklistCount?.value || "10");
+  const maxCount = requestedCount === "all"
+    ? tracks.length
+    : Math.max(1, Math.min(tracks.length, Number.parseInt(requestedCount, 10) || 10));
+  const style = els.tracklistStyle?.value || "numbered";
+  const layout = els.posterLayout?.value || "standard";
+  const visibleTracks = tracks.slice(0, maxCount);
+  const colBreak = layout === "full-cover" ? 10 : layout === "frame" ? 12 : 14;
+  const needsTwoCols = visibleTracks.length >= colBreak;
+  const forceSingleCol = style === "name-duration";
+  const columns = forceSingleCol ? 1 : needsTwoCols ? 2 : 1;
+  els.poster.style.setProperty("--tracklist-columns", String(columns));
+  els.poster.classList.toggle("tracklist-columns-2", columns === 2);
+  els.poster.classList.toggle("tracklist-dense", visibleTracks.length >= 18);
+
+  els.previewTracklist.innerHTML = visibleTracks
+    .map((track, idx) => buildTrackRow(track, idx, style))
+    .join("");
+}
+
+function buildTrackRow(track, index, style) {
+  const name = escapeHtml(track?.name || "Untitled");
+  const num = String(index + 1).padStart(2, "0");
+  const duration = formatTime(Math.round((Number(track?.duration_ms) || 0) / 1000));
+
+  if (style === "name-duration") {
+    return `<li><span class="track-name">${name}</span><span class="track-duration">${duration}</span></li>`;
+  }
+  if (style === "bullets") {
+    return `<li><span class="track-prefix">&bull;</span><span class="track-name">${name}</span></li>`;
+  }
+  return `<li><span class="track-prefix">${num}.</span><span class="track-name">${name}</span></li>`;
 }
 
 function updateLyricsFitHint(lyrics, lineCount) {
@@ -442,14 +643,144 @@ function updateLyricsFitHint(lyrics, lineCount) {
   els.lyricsFitHint.classList.toggle("hidden", !showHint);
 }
 
+let imageRenderRaf = 0;
+function requestImageRenderAndApply() {
+  if (imageRenderRaf) return;
+  imageRenderRaf = window.requestAnimationFrame(() => {
+    imageRenderRaf = 0;
+    renderCustomImageFromTransform().finally(() => applyCustomizations());
+  });
+}
+
+function readImageTransformFromInputs() {
+  return {
+    scale: clamp(Number.parseFloat(els.imageScale?.value || "1"), 1, 3),
+    rotate: clamp(Number.parseFloat(els.imageRotate?.value || "0"), -180, 180),
+    offsetX: clamp(Number.parseFloat(els.imageOffsetX?.value || "0"), -100, 100),
+    offsetY: clamp(Number.parseFloat(els.imageOffsetY?.value || "0"), -100, 100),
+  };
+}
+
+function applyImageTransformToInputs(transform = {}) {
+  if (els.imageScale) els.imageScale.value = String(transform.scale ?? 1);
+  if (els.imageRotate) els.imageRotate.value = String(transform.rotate ?? 0);
+  if (els.imageOffsetX) els.imageOffsetX.value = String(transform.offsetX ?? 0);
+  if (els.imageOffsetY) els.imageOffsetY.value = String(transform.offsetY ?? 0);
+}
+
+function resetImageTransformInputs() {
+  const base = {
+    scale: Number.parseFloat(DEFAULTS.imageScale),
+    rotate: Number.parseFloat(DEFAULTS.imageRotate),
+    offsetX: Number.parseFloat(DEFAULTS.imageOffsetX),
+    offsetY: Number.parseFloat(DEFAULTS.imageOffsetY),
+  };
+  state.customImageTransform = base;
+  applyImageTransformToInputs(base);
+}
+
+async function ensureCustomImageElement() {
+  const source = String(state.customImageSourceUrl || "");
+  if (!source) return null;
+  if (state.customImageElement && state.customImageElementSource === source) {
+    return state.customImageElement;
+  }
+
+  const img = new Image();
+  img.decoding = "async";
+  img.src = source;
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+  });
+  state.customImageElement = img;
+  state.customImageElementSource = source;
+  return img;
+}
+
+function drawTransformedImageToCanvas(canvas, img, transform = {}) {
+  const size = canvas.width;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const scaleMultiplier = clamp(Number(transform.scale || 1), 1, 3);
+  const rotateDeg = clamp(Number(transform.rotate || 0), -180, 180);
+  const offsetX = clamp(Number(transform.offsetX || 0), -100, 100);
+  const offsetY = clamp(Number(transform.offsetY || 0), -100, 100);
+  const iw = img.naturalWidth || img.width || 1;
+  const ih = img.naturalHeight || img.height || 1;
+  const baseScale = Math.max(size / iw, size / ih);
+  const finalScale = baseScale * scaleMultiplier;
+  const rad = (rotateDeg * Math.PI) / 180;
+  const x = size / 2 + (offsetX / 100) * (size * 0.5);
+  const y = size / 2 + (offsetY / 100) * (size * 0.5);
+
+  ctx.clearRect(0, 0, size, size);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rad);
+  ctx.scale(finalScale, finalScale);
+  ctx.drawImage(img, -iw / 2, -ih / 2);
+  ctx.restore();
+}
+
+async function renderCustomImageFromTransform() {
+  const source = String(state.customImageSourceUrl || "");
+  if (!source) {
+    state.customImageUrl = "";
+    if (els.imageEditorWrap) els.imageEditorWrap.classList.add("hidden");
+    return;
+  }
+  if (els.imageEditorWrap) els.imageEditorWrap.classList.remove("hidden");
+
+  try {
+    const img = await ensureCustomImageElement();
+    if (!img) return;
+    state.customImageTransform = readImageTransformFromInputs();
+
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = 1024;
+    exportCanvas.height = 1024;
+    drawTransformedImageToCanvas(exportCanvas, img, state.customImageTransform);
+    state.customImageUrl = exportCanvas.toDataURL("image/jpeg", 0.92);
+
+    if (els.imageEditorCanvas) {
+      drawTransformedImageToCanvas(els.imageEditorCanvas, img, state.customImageTransform);
+    }
+  } catch (error) {
+    console.warn("Custom image transform render failed:", error);
+    setStatus("Could not process this image. Try another file.");
+  }
+}
+
 function syncPosterVisibility() {
+  const layout = els.posterLayout?.value || "standard";
+  const hidePlayerByLayout = layout === "basic" || layout === "full-cover";
+  const hideActionsByLayout = layout === "basic" || layout === "full-cover";
+  const hideCodeByLayout = layout === "basic";
+  const hideDateByLayout = layout === "basic";
+
   els.lyricsBlock.classList.toggle("reserved-hidden", !els.toggleLyrics.checked);
-  els.spotifyCodeWrap.classList.toggle("reserved-hidden", !els.toggleCode.checked);
-  els.playerBar.classList.toggle("reserved-hidden", !els.togglePlayer.checked);
-  els.poster.classList.toggle("compact-player", !els.togglePlayer.checked);
-  els.musicActions.classList.toggle("reserved-hidden", !els.toggleActions.checked);
-  els.poster.classList.toggle("compact-actions", !els.toggleActions.checked);
-  els.releaseDatePreview.classList.toggle("reserved-hidden", !els.toggleDate.checked);
+  const hasTracks = Array.isArray(state.albumTracks) && state.albumTracks.length > 0;
+  els.tracklistBlock.classList.toggle("reserved-hidden", !els.toggleTracklist.checked || !hasTracks);
+  els.spotifyCodeWrap.classList.toggle("reserved-hidden", !els.toggleCode.checked || hideCodeByLayout);
+  els.playerBar.classList.toggle("reserved-hidden", !els.togglePlayer.checked || hidePlayerByLayout);
+  els.poster.classList.toggle("compact-player", !els.togglePlayer.checked || hidePlayerByLayout);
+  els.musicActions.classList.toggle("reserved-hidden", !els.toggleActions.checked || hideActionsByLayout);
+  els.poster.classList.toggle("compact-actions", !els.toggleActions.checked || hideActionsByLayout);
+  els.releaseDatePreview.classList.toggle("reserved-hidden", !els.toggleDate.checked || hideDateByLayout);
+}
+
+function syncRuntimeToggleState() {
+  if (!els.toggleRuntime) return;
+  const runtimeRow = els.toggleRuntime.closest(".toggle-item");
+  const hasTracks = Array.isArray(state.albumTracks) && state.albumTracks.length > 0;
+  const runtimeStyle = (els.tracklistStyle?.value || "numbered") === "name-duration";
+  const enabled = hasTracks && runtimeStyle && Boolean(els.toggleTracklist?.checked);
+  els.toggleRuntime.disabled = !enabled;
+  if (runtimeRow instanceof HTMLElement) {
+    runtimeRow.classList.toggle("control-disabled", !enabled);
+  }
 }
 
 function setThemeMode(mode) {
@@ -486,11 +817,25 @@ function resetToDefaults() {
     : DEFAULTS.playerDuration;
   els.playerProgress.value = DEFAULTS.playerProgress;
   els.codeOpacity.value = DEFAULTS.codeOpacity;
+  if (els.posterLayout) els.posterLayout.value = DEFAULTS.posterLayout;
   els.polaroidColor.value = DEFAULTS.polaroidColor;
   els.accentColor.value = DEFAULTS.accentColor;
   els.fontSelect.value = DEFAULTS.fontSelect;
   if (els.lyricsLineCount) els.lyricsLineCount.value = DEFAULTS.lyricsLineCount;
+  if (els.tracklistCount) els.tracklistCount.value = DEFAULTS.tracklistCount;
+  if (els.tracklistStyle) els.tracklistStyle.value = DEFAULTS.tracklistStyle;
+  if (els.tracklistSpacing) els.tracklistSpacing.value = DEFAULTS.tracklistSpacing;
+  if (els.tracklistAlign) els.tracklistAlign.value = DEFAULTS.tracklistAlign;
+  if (els.tracklistFontSize) els.tracklistFontSize.value = DEFAULTS.tracklistFontSize;
+  if (els.imageScale) els.imageScale.value = DEFAULTS.imageScale;
+  if (els.imageRotate) els.imageRotate.value = DEFAULTS.imageRotate;
+  if (els.imageOffsetX) els.imageOffsetX.value = DEFAULTS.imageOffsetX;
+  if (els.imageOffsetY) els.imageOffsetY.value = DEFAULTS.imageOffsetY;
   els.toggleLyrics.checked = DEFAULTS.toggleLyrics;
+  els.toggleTracklist.checked = DEFAULTS.toggleTracklist;
+  if (els.toggleAutoCleanTitle) els.toggleAutoCleanTitle.checked = DEFAULTS.toggleAutoCleanTitle;
+  if (els.toggleRuntime) els.toggleRuntime.checked = DEFAULTS.toggleRuntime;
+  if (els.toggleFadeBottom) els.toggleFadeBottom.checked = DEFAULTS.toggleFadeBottom;
   els.toggleCode.checked = DEFAULTS.toggleCode;
   els.togglePlayer.checked = DEFAULTS.togglePlayer;
   els.toggleActions.checked = DEFAULTS.toggleActions;
@@ -499,7 +844,12 @@ function resetToDefaults() {
   if (els.imageFit) els.imageFit.value = "cover";
   setThemeMode("template");
   els.customImageInput.value = "";
+  state.customImageSourceUrl = "";
   state.customImageUrl = "";
+  state.customImageElement = null;
+  state.customImageElementSource = "";
+  resetImageTransformInputs();
+  if (els.imageEditorWrap) els.imageEditorWrap.classList.add("hidden");
   state.isPlayingVisual = false;
   state.likedVisual = true;
   els.btnPlayPause.innerHTML = "&#x23F5;";
@@ -507,11 +857,14 @@ function resetToDefaults() {
 
   if (state.selected) {
     const isTrack = state.selected.__kind === "track";
+    setLyricsPanelEnabled(isTrack);
     const selectedArtists = (state.selected.artists || []).map((a) => a.name).join(", ") || "Unknown";
     const selectedDate = isTrack ? state.selected.album?.release_date : state.selected.release_date;
     els.posterTitle.value = state.selected.name || "";
     els.posterArtist.value = selectedArtists;
     els.releaseDate.value = selectedDate || "--";
+  } else {
+    setLyricsPanelEnabled(true);
   }
 
   syncPosterVisibility();
@@ -539,7 +892,17 @@ function getCurrentPresetPayload() {
     polaroidColor: els.polaroidColor.value,
     accentColor: els.accentColor.value,
     fontSelect: els.fontSelect.value,
+    posterLayout: els.posterLayout?.value || "standard",
     lyricsLineCount: els.lyricsLineCount?.value || "3",
+    tracklistCount: els.tracklistCount?.value || "10",
+    tracklistStyle: els.tracklistStyle?.value || "numbered",
+    tracklistSpacing: els.tracklistSpacing?.value || "1.15",
+    tracklistAlign: els.tracklistAlign?.value || "left",
+    tracklistFontSize: els.tracklistFontSize?.value || "0.71",
+    toggleTracklist: Boolean(els.toggleTracklist?.checked),
+    toggleAutoCleanTitle: Boolean(els.toggleAutoCleanTitle?.checked),
+    toggleRuntime: Boolean(els.toggleRuntime?.checked),
+    toggleFadeBottom: Boolean(els.toggleFadeBottom?.checked),
     themeMode: state.themeMode,
   };
 }
@@ -549,14 +912,33 @@ function applyPresetPayload(preset) {
     "polaroidColor",
     "accentColor",
     "fontSelect",
+    "posterLayout",
     "lyricsLineCount",
+    "tracklistCount",
+    "tracklistStyle",
+    "tracklistSpacing",
+    "tracklistAlign",
+    "tracklistFontSize",
   ];
   keys.forEach((key) => {
     if (preset[key] !== undefined && els[key]) {
       els[key].value = String(preset[key]);
     }
   });
+  if (preset.toggleTracklist !== undefined && els.toggleTracklist) {
+    els.toggleTracklist.checked = Boolean(preset.toggleTracklist);
+  }
+  if (preset.toggleAutoCleanTitle !== undefined && els.toggleAutoCleanTitle) {
+    els.toggleAutoCleanTitle.checked = Boolean(preset.toggleAutoCleanTitle);
+  }
+  if (preset.toggleRuntime !== undefined && els.toggleRuntime) {
+    els.toggleRuntime.checked = Boolean(preset.toggleRuntime);
+  }
+  if (preset.toggleFadeBottom !== undefined && els.toggleFadeBottom) {
+    els.toggleFadeBottom.checked = Boolean(preset.toggleFadeBottom);
+  }
   setThemeMode(preset.themeMode === "custom" ? "custom" : "template");
+  syncPosterVisibility();
   applyCustomizations();
 }
 
@@ -572,17 +954,33 @@ function getCurrentOrderSnapshot() {
     polaroidColor: els.polaroidColor.value,
     accentColor: els.accentColor.value,
     fontSelect: els.fontSelect.value,
+    posterLayout: els.posterLayout?.value || "standard",
     lyricsLineCount: els.lyricsLineCount?.value || "3",
+    tracklistCount: els.tracklistCount?.value || "10",
+    tracklistStyle: els.tracklistStyle?.value || "numbered",
+    tracklistSpacing: els.tracklistSpacing?.value || "1.15",
+    tracklistAlign: els.tracklistAlign?.value || "left",
+    tracklistFontSize: els.tracklistFontSize?.value || "0.71",
     themeMode: state.themeMode,
     toggleLyrics: Boolean(els.toggleLyrics.checked),
+    toggleTracklist: Boolean(els.toggleTracklist?.checked),
+    toggleAutoCleanTitle: Boolean(els.toggleAutoCleanTitle?.checked),
+    toggleRuntime: Boolean(els.toggleRuntime?.checked),
+    toggleFadeBottom: Boolean(els.toggleFadeBottom?.checked),
     toggleCode: Boolean(els.toggleCode.checked),
     togglePlayer: Boolean(els.togglePlayer.checked),
     toggleActions: Boolean(els.toggleActions.checked),
     toggleDate: Boolean(els.toggleDate.checked),
     imageFit: els.imageFit?.value || "cover",
     useCustomImage: Boolean(els.useCustomImage.checked),
+    imageScale: els.imageScale?.value || "1",
+    imageRotate: els.imageRotate?.value || "0",
+    imageOffsetX: els.imageOffsetX?.value || "0",
+    imageOffsetY: els.imageOffsetY?.value || "0",
     customImageUrl: state.customImageUrl || "",
+    customImageSourceUrl: state.customImageSourceUrl || "",
     spotifyCoverUrl: state.spotifyCoverUrl || "",
+    albumTracks: state.albumTracks || [],
     codeUri: state.codeUri || "",
     explicit: !els.explicitBadge.classList.contains("hidden"),
     createdAt: new Date().toISOString(),
@@ -603,32 +1001,85 @@ function applyOrderSnapshot(snapshot) {
   if (snapshot.polaroidColor !== undefined) els.polaroidColor.value = String(snapshot.polaroidColor || "#f5f0e6");
   if (snapshot.accentColor !== undefined) els.accentColor.value = String(snapshot.accentColor || "#0d0d0d");
   if (snapshot.fontSelect !== undefined) els.fontSelect.value = String(snapshot.fontSelect || DEFAULTS.fontSelect);
+  if (snapshot.posterLayout !== undefined && els.posterLayout) {
+    els.posterLayout.value = String(snapshot.posterLayout || "standard");
+  }
   if (snapshot.lyricsLineCount !== undefined && els.lyricsLineCount) {
     els.lyricsLineCount.value = String(snapshot.lyricsLineCount || "3");
   }
+  if (snapshot.tracklistCount !== undefined && els.tracklistCount) {
+    els.tracklistCount.value = String(snapshot.tracklistCount || "10");
+  }
+  if (snapshot.tracklistStyle !== undefined && els.tracklistStyle) {
+    els.tracklistStyle.value = String(snapshot.tracklistStyle || "numbered");
+  }
+  if (snapshot.tracklistSpacing !== undefined && els.tracklistSpacing) {
+    els.tracklistSpacing.value = String(snapshot.tracklistSpacing || "1.15");
+  }
+  if (snapshot.tracklistAlign !== undefined && els.tracklistAlign) {
+    els.tracklistAlign.value = String(snapshot.tracklistAlign || "left");
+  }
+  if (snapshot.tracklistFontSize !== undefined && els.tracklistFontSize) {
+    els.tracklistFontSize.value = String(snapshot.tracklistFontSize || "0.71");
+  }
   if (snapshot.imageFit !== undefined && els.imageFit) els.imageFit.value = String(snapshot.imageFit || "cover");
+  if (snapshot.imageScale !== undefined && els.imageScale) {
+    els.imageScale.value = String(snapshot.imageScale || "1");
+  }
+  if (snapshot.imageRotate !== undefined && els.imageRotate) {
+    els.imageRotate.value = String(snapshot.imageRotate || "0");
+  }
+  if (snapshot.imageOffsetX !== undefined && els.imageOffsetX) {
+    els.imageOffsetX.value = String(snapshot.imageOffsetX || "0");
+  }
+  if (snapshot.imageOffsetY !== undefined && els.imageOffsetY) {
+    els.imageOffsetY.value = String(snapshot.imageOffsetY || "0");
+  }
 
   state.themeMode = snapshot.themeMode === "custom" ? "custom" : "template";
   setThemeMode(state.themeMode);
 
   els.toggleLyrics.checked = snapshot.toggleLyrics !== false;
+  if (els.toggleTracklist) {
+    els.toggleTracklist.checked = snapshot.toggleTracklist !== false;
+  }
+  if (els.toggleAutoCleanTitle) {
+    els.toggleAutoCleanTitle.checked = snapshot.toggleAutoCleanTitle === true;
+  }
+  if (els.toggleRuntime) {
+    els.toggleRuntime.checked = snapshot.toggleRuntime !== false;
+  }
+  if (els.toggleFadeBottom) {
+    els.toggleFadeBottom.checked = snapshot.toggleFadeBottom === true;
+  }
   els.toggleCode.checked = snapshot.toggleCode !== false;
   els.togglePlayer.checked = snapshot.togglePlayer !== false;
   els.toggleActions.checked = snapshot.toggleActions !== false;
   els.toggleDate.checked = snapshot.toggleDate !== false;
 
   state.spotifyCoverUrl = String(snapshot.spotifyCoverUrl || "");
+  state.customImageSourceUrl = String(snapshot.customImageSourceUrl || snapshot.customImageUrl || "");
   state.customImageUrl = String(snapshot.customImageUrl || "");
+  state.customImageElement = null;
+  state.customImageElementSource = "";
+  state.customImageTransform = readImageTransformFromInputs();
+  state.albumTracks = Array.isArray(snapshot.albumTracks) ? snapshot.albumTracks : [];
+  setLyricsPanelEnabled(state.albumTracks.length === 0);
   state.codeUri = String(snapshot.codeUri || "");
   els.useCustomImage.checked = Boolean(snapshot.useCustomImage && state.customImageUrl);
 
   if (snapshot.explicit === true) els.explicitBadge.classList.remove("hidden");
   if (snapshot.explicit === false) els.explicitBadge.classList.add("hidden");
 
-  updateSpotifyCode();
+  updateSpotifyCode(true);
   syncPosterVisibility();
   updatePlayerFromProgress();
-  applyCustomizations();
+  if (state.customImageSourceUrl) {
+    renderCustomImageFromTransform().finally(() => applyCustomizations());
+  } else {
+    if (els.imageEditorWrap) els.imageEditorWrap.classList.add("hidden");
+    applyCustomizations();
+  }
 }
 
 function refreshPresetOptions() {
@@ -660,6 +1111,7 @@ function savePreset() {
   writeStoredPresets(presets);
   refreshPresetOptions();
   els.presetSelect.value = name;
+  trackEvent("preset_saved", { nameLen: name.length });
   setStatus(`Preset "${name}" saved.`);
 }
 
@@ -671,6 +1123,7 @@ function loadPreset() {
     return;
   }
   applyPresetPayload(preset.data || {});
+  trackEvent("preset_loaded", { nameLen: name.length });
   setStatus(`Preset "${name}" loaded.`);
 }
 
@@ -683,6 +1136,7 @@ function deletePreset() {
   const presets = readStoredPresets().filter((p) => p.name !== name);
   writeStoredPresets(presets);
   refreshPresetOptions();
+  trackEvent("preset_deleted", { nameLen: name.length });
   setStatus(`Preset "${name}" deleted.`);
 }
 
@@ -762,6 +1216,7 @@ async function sharePosterToApp() {
           text: shareText,
           files: [file],
         });
+        trackEvent("poster_shared", { mode: "files" });
         setStatus("Poster shared. Pick WhatsApp or Instagram in the share sheet.");
         return;
       }
@@ -770,11 +1225,13 @@ async function sharePosterToApp() {
         text: shareText,
         url: window.location.href,
       });
+      trackEvent("poster_shared", { mode: "url" });
       setStatus("Share sheet opened.");
       return;
     }
   } catch (err) {
     console.warn("Share error:", err);
+    trackEvent("poster_share_failed", {});
   }
 
   const copied = await copyTextToClipboard(window.location.href);
@@ -792,11 +1249,17 @@ async function sharePosterToApp() {
   "lyricsText",
   "playerDuration",
   "playerProgress",
+  "posterLayout",
   "codeOpacity",
   "polaroidColor",
   "accentColor",
   "fontSelect",
   "lyricsLineCount",
+  "tracklistCount",
+  "tracklistStyle",
+  "tracklistSpacing",
+  "tracklistAlign",
+  "tracklistFontSize",
 ].forEach((key) => {
   els[key].addEventListener("input", () => {
     if (key === "playerDuration" || key === "playerProgress") updatePlayerFromProgress();
@@ -804,20 +1267,57 @@ async function sharePosterToApp() {
   });
 });
 
+function setLyricsPanelEnabled(enabled) {
+  const tabBtn = document.querySelector('.tab-btn[data-tab="lyrics"]');
+  const panel = document.querySelector('.tab-panel[data-panel="lyrics"]');
+  if (!(tabBtn instanceof HTMLElement) || !(panel instanceof HTMLElement)) return;
+  tabBtn.classList.toggle("hidden", !enabled);
+  panel.classList.toggle("hidden", !enabled);
+  if (!enabled && tabBtn.classList.contains("active")) {
+    const designBtn = document.querySelector('.tab-btn[data-tab="design"]');
+    if (designBtn instanceof HTMLButtonElement) designBtn.click();
+  }
+}
+
 els.lyricsLineCount?.addEventListener("change", applyCustomizations);
+els.tracklistCount?.addEventListener("change", applyCustomizations);
+els.tracklistStyle?.addEventListener("change", applyCustomizations);
+els.tracklistAlign?.addEventListener("change", applyCustomizations);
+els.tracklistSpacing?.addEventListener("change", applyCustomizations);
+els.tracklistFontSize?.addEventListener("change", applyCustomizations);
+els.posterLayout?.addEventListener("change", applyCustomizations);
 
 els.useCustomImage.addEventListener("change", applyCustomizations);
 if (els.imageFit) els.imageFit.addEventListener("change", applyCustomizations);
+["imageScale", "imageRotate", "imageOffsetX", "imageOffsetY"].forEach((key) => {
+  if (!els[key]) return;
+  els[key].addEventListener("input", () => {
+    requestImageRenderAndApply();
+  });
+});
+els.resetImageAdjustmentsBtn?.addEventListener("click", () => {
+  resetImageTransformInputs();
+  requestImageRenderAndApply();
+  window.setTimeout(() => {
+    applyCustomizations();
+    setStatus("Image adjustments reset.");
+  }, 60);
+});
 
 els.customImageInput.addEventListener("change", () => {
   const file = els.customImageInput.files?.[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
-    state.customImageUrl = String(reader.result || "");
+    state.customImageSourceUrl = String(reader.result || "");
+    state.customImageElement = null;
+    state.customImageElementSource = "";
+    resetImageTransformInputs();
     els.useCustomImage.checked = true;
-    applyCustomizations();
-    setStatus("Custom image applied.");
+    renderCustomImageFromTransform().finally(() => {
+      applyCustomizations();
+      setStatus("Custom image loaded. You can crop, rotate, and position it.");
+    });
   };
   reader.readAsDataURL(file);
 });
@@ -842,6 +1342,13 @@ els.colorTemplates.addEventListener("click", (event) => {
 els.toggleLyrics.addEventListener("change", () => {
   syncPosterVisibility();
 });
+els.toggleTracklist?.addEventListener("change", () => {
+  syncPosterVisibility();
+  applyCustomizations();
+});
+els.toggleAutoCleanTitle?.addEventListener("change", applyCustomizations);
+els.toggleRuntime?.addEventListener("change", applyCustomizations);
+els.toggleFadeBottom?.addEventListener("change", applyCustomizations);
 els.toggleCode.addEventListener("change", () => {
   syncPosterVisibility();
 });
@@ -865,6 +1372,39 @@ els.btnLiked.addEventListener("click", () => {
   els.btnLiked.style.opacity = state.likedVisual ? "1" : "0.45";
 });
 
+let isDraggingImageEditor = false;
+let dragLastX = 0;
+let dragLastY = 0;
+els.imageEditorCanvas?.addEventListener("pointerdown", (event) => {
+  if (!state.customImageSourceUrl) return;
+  isDraggingImageEditor = true;
+  dragLastX = event.clientX;
+  dragLastY = event.clientY;
+  els.imageEditorCanvas.setPointerCapture(event.pointerId);
+});
+els.imageEditorCanvas?.addEventListener("pointermove", (event) => {
+  if (!isDraggingImageEditor || !els.imageEditorCanvas) return;
+  const dx = event.clientX - dragLastX;
+  const dy = event.clientY - dragLastY;
+  dragLastX = event.clientX;
+  dragLastY = event.clientY;
+  const size = els.imageEditorCanvas.width || 320;
+  const nextX = clamp(Number.parseFloat(els.imageOffsetX?.value || "0") + (dx / (size * 0.5)) * 100, -100, 100);
+  const nextY = clamp(Number.parseFloat(els.imageOffsetY?.value || "0") + (dy / (size * 0.5)) * 100, -100, 100);
+  if (els.imageOffsetX) els.imageOffsetX.value = String(Math.round(nextX));
+  if (els.imageOffsetY) els.imageOffsetY.value = String(Math.round(nextY));
+  requestImageRenderAndApply();
+});
+["pointerup", "pointercancel", "pointerleave"].forEach((evt) => {
+  els.imageEditorCanvas?.addEventListener(evt, (event) => {
+    if (!isDraggingImageEditor || !els.imageEditorCanvas) return;
+    isDraggingImageEditor = false;
+    try {
+      els.imageEditorCanvas.releasePointerCapture(event.pointerId);
+    } catch {}
+  });
+});
+
 async function downloadPosterPng() {
   setStatus("Rendering high-quality PNG...");
   try {
@@ -876,12 +1416,15 @@ async function downloadPosterPng() {
     );
     if (!mode) throw new Error("Download could not be started");
     if (mode === "preview") {
+      trackEvent("png_export_preview", {});
       setStatus("Preview opened in a new tab. Long-press the image and save to Photos.");
       return;
     }
+    trackEvent("png_export_download", {});
     setStatus("High-quality PNG downloaded.");
   } catch (err) {
     console.error(err);
+    trackEvent("png_export_failed", {});
     setStatus("PNG export failed. Try another cover image and retry.");
   }
 }
@@ -1099,6 +1642,47 @@ function setStatus(message) {
   if (els.ownerStatus) els.ownerStatus.textContent = message;
 }
 
+const ANALYTICS_SESSION_KEY = "spotpost_session_id_v1";
+const analyticsSessionId = getOrCreateSessionId();
+
+function trackEvent(event, payload = {}) {
+  const body = JSON.stringify({
+    event,
+    payload: {
+      ...payload,
+      page: "generator",
+      sessionId: analyticsSessionId,
+    },
+  });
+
+  if (navigator.sendBeacon) {
+    const blob = new Blob([body], { type: "application/json" });
+    navigator.sendBeacon("/api/events", blob);
+    return;
+  }
+
+  fetch("/api/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body,
+    keepalive: true,
+  }).catch(() => {});
+}
+
+function getOrCreateSessionId() {
+  try {
+    const existing = localStorage.getItem(ANALYTICS_SESSION_KEY);
+    if (existing) return existing;
+    const bytes = new Uint8Array(8);
+    crypto.getRandomValues(bytes);
+    const id = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    localStorage.setItem(ANALYTICS_SESSION_KEY, id);
+    return id;
+  } catch {
+    return "anon";
+  }
+}
+
 async function canvasToPngBlob(canvas) {
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
   if (blob) return blob;
@@ -1125,6 +1709,19 @@ function isDarkHexColor(hex) {
   return luminance < 140;
 }
 
+function hexToRgba(hex, alpha = 1) {
+  const safe = String(hex || "").replace("#", "");
+  const normalized = /^[A-F0-9]{6}$/i.test(safe)
+    ? safe
+    : /^[A-F0-9]{3}$/i.test(safe)
+      ? safe.split("").map((ch) => ch + ch).join("")
+      : "F5F0E6";
+  const r = Number.parseInt(normalized.slice(0, 2), 16);
+  const g = Number.parseInt(normalized.slice(2, 4), 16);
+  const b = Number.parseInt(normalized.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${clamp(alpha, 0, 1)})`;
+}
+
 function getLuminanceFromHex(hex) {
   const safe = hex.replace("#", "");
   const valid = /^[A-F0-9]{6}$/i.test(safe) ? safe : "F5F0E6";
@@ -1141,6 +1738,12 @@ function getContrastRatio(hex1, hex2) {
   const brightest = Math.max(lum1, lum2);
   const darkest = Math.min(lum1, lum2);
   return (brightest + 0.05) / (darkest + 0.05);
+}
+
+function clamp(value, min, max) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return min;
+  return Math.min(max, Math.max(min, num));
 }
 
 function isOwnerModeFromUrl() {
@@ -1241,6 +1844,13 @@ async function loadOrderByOwnerInput() {
   await loadOrderSnapshotById(els.ownerOrderId?.value || "");
 }
 
+if (els.searchType) els.searchType.value = "both";
+if (els.posterLayout) els.posterLayout.value = DEFAULTS.posterLayout;
+els.togglePlayer.checked = DEFAULTS.togglePlayer;
+els.toggleActions.checked = DEFAULTS.toggleActions;
+if (els.toggleFadeBottom) els.toggleFadeBottom.checked = DEFAULTS.toggleFadeBottom;
+setLyricsPanelEnabled(true);
+
 updatePlayerFromProgress();
 applyCustomizations();
 refreshPresetOptions();
@@ -1254,4 +1864,5 @@ if (isOwnerModeFromUrl()) {
   els.ownerLookupWrap?.classList.remove("hidden");
   goToStep(3);
 }
+trackEvent("generator_loaded", { ownerMode: isOwnerModeFromUrl() });
 loadOrderSnapshotFromUrl();

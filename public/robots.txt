@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://polaroify.vercel.app/sitemap.xml

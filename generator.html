@@ -8,6 +8,34 @@
   <title>Polaroify - Generator</title>
   <meta name="description"
     content="Create stunning music polaroid posters with custom colors, lyrics, fonts, and Spotify integration. Export print-ready PNGs." />
+  <meta name="robots" content="index,follow" />
+  <meta property="og:title" content="Polaroify Generator - Build Premium Music Posters" />
+  <meta property="og:description"
+    content="Search tracks and albums, customize styles, and export high-quality music posters." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://polaroify.vercel.app/generator.html" />
+  <meta property="og:image" content="https://polaroify.vercel.app/polaroify.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Polaroify Generator" />
+  <meta name="twitter:description"
+    content="Create personalized album and song posters in minutes." />
+  <meta name="twitter:image" content="https://polaroify.vercel.app/polaroify.png" />
+  <link rel="canonical" href="https://polaroify.vercel.app/generator.html" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script>
+    (function () {
+      try {
+        var key = "spotpost_theme_v1";
+        var saved = localStorage.getItem(key);
+        var theme = (saved === "light" || saved === "dark")
+          ? saved
+          : ((window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (_e) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -20,6 +48,13 @@
   <div class="bg-layer"></div>
   <main class="page">
     <header class="hero">
+      <div class="hero-topbar">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">
+          <span class="theme-toggle-orb" aria-hidden="true"></span>
+          <span class="theme-toggle-label">Theme</span>
+          <span class="theme-toggle-value">Dark</span>
+        </button>
+      </div>
       <p class="kicker">Polaroify Studio</p>
       <h1>Create Your Polaroid</h1>
       <p>Step-by-step flow for searching, customizing, and exporting.</p>
@@ -57,7 +92,7 @@
               <select id="searchType">
                 <option value="track">Track</option>
                 <option value="album">Album</option>
-                <option value="both">Both</option>
+                <option value="both" selected>Both</option>
               </select>
             </div>
             <button id="searchBtn" class="btn">Fetch from Spotify</button>
@@ -162,8 +197,74 @@
               </div>
             </div>
             <div class="ui-card">
+              <h3>Poster Layout</h3>
+              <div class="control-row">
+                <label for="posterLayout">Layout Style</label>
+                <select id="posterLayout">
+                  <option value="standard">Standard</option>
+                  <option value="frame">Frame</option>
+                  <option value="basic">Basic</option>
+                  <option value="full-cover">Full Cover</option>
+                </select>
+              </div>
+            </div>
+            <div class="ui-card">
+              <h3>Album Tracklist</h3>
+              <div class="control-row split two-col">
+                <div class="input-group">
+                  <label for="tracklistCount">Tracks to Show</label>
+                  <select id="tracklistCount">
+                    <option value="6">6 tracks</option>
+                    <option value="8">8 tracks</option>
+                    <option value="10" selected>10 tracks</option>
+                    <option value="12">12 tracks</option>
+                    <option value="15">15 tracks</option>
+                    <option value="all">All tracks</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label for="tracklistStyle">Tracklist Style</label>
+                  <select id="tracklistStyle">
+                    <option value="numbered">Numbered</option>
+                    <option value="bullets">Bullets</option>
+                    <option value="name-duration">Title + Duration</option>
+                  </select>
+                </div>
+              </div>
+              <div class="control-row split two-col">
+                <div class="input-group">
+                  <label for="tracklistAlign">Text Alignment</label>
+                  <select id="tracklistAlign">
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label for="tracklistSpacing">Line Spacing</label>
+                  <input id="tracklistSpacing" type="range" min="0.95" max="1.45" step="0.05" value="1.15" />
+                </div>
+              </div>
+              <div class="control-row">
+                <label for="tracklistFontSize">Tracklist Font Size</label>
+                <input id="tracklistFontSize" type="range" min="0.58" max="0.9" step="0.01" value="0.71" />
+              </div>
+            </div>
+            <div class="ui-card">
               <h3>Visibility</h3>
               <div class="toggles toggles-compact">
+                <div class="toggle-item toggle-compact"><span>Show Album Tracklist</span><input id="toggleTracklist"
+                    type="checkbox" checked />
+                </div>
+                <div class="toggle-item toggle-compact"><span>Auto-clean Title</span><input id="toggleAutoCleanTitle"
+                    type="checkbox" />
+                </div>
+                <div class="toggle-item toggle-compact"><span>Show Runtime</span><input id="toggleRuntime"
+                    type="checkbox" checked />
+                </div>
+                <div class="toggle-item toggle-compact"><span>Fade Bottom</span><input id="toggleFadeBottom"
+                    type="checkbox" />
+                </div>
                 <div class="toggle-item toggle-compact"><span>Show Spotify Code</span><input id="toggleCode"
                     type="checkbox" checked />
                 </div>
@@ -209,6 +310,36 @@
                 <label for="customImageInput">Custom Image (optional)</label>
                 <input id="customImageInput" type="file" accept="image/*" />
                 <label><input id="useCustomImage" type="checkbox" /> Use custom image</label>
+              </div>
+              <div id="imageEditorWrap" class="image-editor-wrap hidden">
+                <div class="image-editor-canvas-wrap">
+                  <canvas id="imageEditorCanvas" width="320" height="320"></canvas>
+                </div>
+                <p class="status image-editor-tip">Drag image in preview, or use controls below.</p>
+                <div class="control-row split two-col">
+                  <div class="input-group">
+                    <label for="imageScale">Zoom</label>
+                    <input id="imageScale" type="range" min="1" max="3" step="0.01" value="1" />
+                  </div>
+                  <div class="input-group">
+                    <label for="imageRotate">Rotate</label>
+                    <input id="imageRotate" type="range" min="-180" max="180" step="1" value="0" />
+                  </div>
+                </div>
+                <div class="control-row split two-col">
+                  <div class="input-group">
+                    <label for="imageOffsetX">Horizontal Position</label>
+                    <input id="imageOffsetX" type="range" min="-100" max="100" step="1" value="0" />
+                  </div>
+                  <div class="input-group">
+                    <label for="imageOffsetY">Vertical Position</label>
+                    <input id="imageOffsetY" type="range" min="-100" max="100" step="1" value="0" />
+                  </div>
+                </div>
+                <div class="control-row">
+                  <button id="resetImageAdjustmentsBtn" class="btn btn-secondary" type="button">Reset Image
+                    Adjustments</button>
+                </div>
               </div>
               <div class="control-row split">
                 <div class="input-group" style="padding-top: 5px;">
@@ -271,6 +402,9 @@
               </div>
             </div>
           </section>
+          <p class="export-note">Lyrics and artwork rights remain with their respective owners. Ensure your usage
+            complies with applicable laws and platform terms.</p>
+          <p class="export-note"><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
         </div>
       </article>
 
@@ -304,6 +438,9 @@
             <button id="btnNext" class="icon-btn" type="button" aria-label="Next">&#x23ED;</button>
             <button id="btnLiked" class="icon-btn liked-btn" type="button" aria-label="Liked">&#10003;</button>
           </div>
+          <div id="tracklistBlock" class="tracklist-block">
+            <ol id="previewTracklist"></ol>
+          </div>
           <div id="lyricsBlock" class="lyrics-block">
             <p id="previewLyrics">Your custom lyrics will appear here.</p>
           </div>
@@ -311,6 +448,7 @@
             <div id="spotifyCodeWrap" class="spotify-code-wrap"><img id="spotifyCode" alt="Spotify Code" /></div>
             <p id="releaseDatePreview">--</p>
           </footer>
+          <div id="posterFadeOverlay" class="poster-fade-overlay"></div>
         </div>
         <div class="preview-step-nav" data-step-nav="1">
           <button id="step1Next" class="btn" type="button">Next</button>
@@ -326,8 +464,10 @@
     </section>
   </main>
 
+  <script type="module" src="./theme.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
   <script type="module" src="./app.js"></script>
 </body>
 
 </html>
+

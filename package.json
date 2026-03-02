@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "dev": "concurrently \"node --env-file=.env server.js\" \"node -e \\\"const net=require('node:net');const tryConnect=()=>{const s=net.connect(8787,'127.0.0.1');s.on('connect',()=>{s.end();process.exit(0);});s.on('error',()=>setTimeout(tryConnect,200));};tryConnect();\\\" && vite\"",
+        "dev": "node --env-file=.env server.js",
         "dev:client": "vite",
         "dev:server": "node --env-file=.env server.js",
         "build": "vite build",
@@ -16,7 +16,6 @@
         "express": "^4.21.2"
     },
     "devDependencies": {
-        "concurrently": "^9.2.1",
         "vite": "^7.1.0"
     }
 }
