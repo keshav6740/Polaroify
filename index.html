@@ -1,139 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Polaroify - Music Polaroid Posters</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./landing.css" />
-  </head>
-  <body>
-    <div class="bg-glow bg-glow-a"></div>
-    <div class="bg-glow bg-glow-b"></div>
-    <div class="bg-grid"></div>
-    <main class="landing">
-      <nav class="topbar">
-        <p class="brand">Polaroify</p>
-        <a class="top-cta" href="/generator.html">Open Generator</a>
-      </nav>
 
-      <header class="hero">
-        <section class="hero-copy">
-          <p class="badge">Studio For Music Posters</p>
-          <h1>Design collectible song polaroids that actually sell.</h1>
-          <p class="emotional-line">Turn songs into memories you can hold.</p>
-          <p class="subtitle">
-            Search any track, style the card your way, and export a print-ready
-            PNG for phone covers, gifts, and custom drops.
-          </p>
-          <div class="cta-row">
-            <a class="cta-primary" href="/generator.html">Create Yours Now</a>
-            <a class="cta-secondary" href="#features">See How It Works</a>
-          </div>
-          <div class="format-row" aria-label="Export formats">
-            <span class="format-chip"><i></i>Story</span>
-            <span class="format-chip"><i></i>Poster</span>
-            <span class="format-chip"><i></i>Print</span>
-            <span class="format-chip"><i></i>Polaroid</span>
-          </div>
-          <div class="stat-row">
-            <article><h3>3-Step Flow</h3><p>Pick, style, export</p></article>
-            <article><h3>Spotify-Linked</h3><p>Real song data + scannable code</p></article>
-            <article><h3>Print Ready</h3><p>High quality PNG output</p></article>
-          </div>
-        </section>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#050507" />
+  <title>Polaroify — Turn Songs Into Collectible Polaroids</title>
+  <meta name="description"
+    content="Search any Spotify track, design a stunning polaroid card, and export a print-ready PNG. The ultimate music poster generator." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="./landing.css" />
+</head>
 
-        <section class="hero-visual" aria-hidden="true">
-          <article class="demo-polaroid demo-left">
-            <div class="demo-cover blinding-cover"></div>
-            <p class="demo-title">BLINDING LIGHTS</p>
-            <p class="demo-artist">The Weeknd</p>
-            <div class="demo-progress"><span></span></div>
-            <div class="demo-actions">
-              <span>⤮</span><span>⏮</span><span class="play">▶</span><span>⏭</span><span class="ok">✓</span>
-            </div>
-            <p class="demo-lyrics">"I've been tryna call..."<br />"I'm blinded by the lights"</p>
-            <div class="demo-footer">
-              <img
-                class="demo-code-img"
-                src="https://scannables.scdn.co/uri/plain/png/FFFFFF/black/640/spotify:track:0VjIjW4GlUZAMYd2vXMi3b"
-                alt="Spotify code for Blinding Lights"
-              />
-              <p>29-11-2019</p>
-            </div>
-            <p class="demo-watermark">Generated with Polaroify</p>
-          </article>
-          <article class="demo-polaroid demo-right">
-            <div class="demo-cover generated-cover"></div>
-            <p class="demo-title">11K</p>
-            <p class="demo-artist">Seedhe Maut</p>
-            <div class="demo-progress"><span></span></div>
-            <div class="demo-actions">
-              <span>⤮</span><span>⏮</span><span class="play">▶</span><span>⏭</span><span class="ok">✓</span>
-            </div>
-            <p class="demo-lyrics">"Bhai, thodi zaroorat hai"<br />"Maine kaha bilkul pade hain"</p>
-            <div class="demo-footer">
-              <img
-                class="demo-code-img"
-                src="https://scannables.scdn.co/uri/plain/png/65AEBF/black/640/spotify:track:2HIQKpI6qxrU8LjDLHmbSb"
-                alt="Spotify code for 11K"
-              />
-              <p>19-08-2023</p>
-            </div>
-            <p class="demo-watermark">Generated with Polaroify</p>
-          </article>
-        </section>
-      </header>
+<body>
+  <!-- Animated background layers -->
+  <div class="aurora"></div>
+  <div class="aurora aurora-2"></div>
+  <div class="noise-overlay"></div>
+  <div class="grid-overlay"></div>
 
-      <section id="features" class="features">
-        <article class="feature feature-large">
-          <p class="feature-kicker">01</p>
+  <main class="landing">
+    <!-- ─── Navbar ─── -->
+    <nav class="navbar" id="navbar">
+      <div class="nav-brand">
+        <span class="brand-dot"></span>
+        <span class="brand-text">Polaroify</span>
+      </div>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#process">How It Works</a>
+        <a class="nav-cta" href="/generator.html">Open Studio →</a>
+      </div>
+    </nav>
+
+    <!-- ─── Hero ─── -->
+    <header class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-pulse"></span>
+          <span>Music Poster Studio</span>
+        </div>
+        <h1>Turn songs into<br /><span class="gradient-text">memories you can hold.</span></h1>
+        <p class="hero-subtitle">
+          Search any Spotify track, design your polaroid card with custom colors, lyrics, and fonts — then export a
+          print-ready PNG in seconds.
+        </p>
+        <div class="hero-actions">
+          <a class="btn-primary" href="/generator.html">
+            <span>Create Your Polaroid</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+          </a>
+          <a class="btn-glass" href="#features">See Features</a>
+        </div>
+        <div class="hero-chips">
+          <span class="chip"><span class="chip-dot green"></span>Spotify Linked</span>
+          <span class="chip"><span class="chip-dot blue"></span>Print Ready PNG</span>
+          <span class="chip"><span class="chip-dot orange"></span>20+ Fonts</span>
+          <span class="chip"><span class="chip-dot pink"></span>Auto Lyrics</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true" id="heroVisual">
+        <div class="visual-glow"></div>
+
+        <!-- Back card: 11K by Seedhe Maut -->
+        <article class="card-demo card-back" style="background:#65aebf; color:#0d2431;">
+          <div class="card-photo"><img src="./sm.jpg" alt="11K cover" width="512" height="512" decoding="async" /></div>
+          <div class="card-meta">
+            <h4>11K</h4>
+            <p>Seedhe Maut</p>
+          </div>
+          <div class="card-player">
+            <div class="card-timeline"><span style="width:62%; background:#0d2431;"></span></div>
+            <span style="opacity:0.6; font-size:0.58rem;">1:58 / 3:12</span>
+          </div>
+          <div class="card-actions">
+            <button class="icon-btn" type="button" aria-label="Shuffle">
+              <svg class="shuffle-svg" viewBox="0 0 64 40" aria-hidden="true" focusable="false">
+                <path class="line" d="M2 8h12c9 0 14 3 20 8l8 8c4 4 8 6 14 6h4" />
+                <path class="line" d="M2 32h12c9 0 14-3 20-8l8-8c4-4 8-6 14-6h4" />
+                <path class="head" d="M53 3l11 8-11 8z" />
+                <path class="head" d="M53 21l11 8-11 8z" />
+              </svg>
+            </button>
+            <button class="icon-btn" type="button" aria-label="Previous">&#x23EE;</button>
+            <button class="icon-btn action-primary" type="button" aria-label="Play Pause">&#x23F5;</button>
+            <button class="icon-btn" type="button" aria-label="Next">&#x23ED;</button>
+            <button class="icon-btn liked-btn" type="button" aria-label="Liked">&#10003;</button>
+          </div>
+          <p class="card-lyrics">"Bhai, thodi zaroorat hai"<br />"Maine kaha bilkul pade hain"</p>
+          <div class="card-bottom">
+            <img src="/api/spotify-code?uri=spotify:track:2HIQKpI6qxrU8LjDLHmbSb&bg=65AEBF&bars=black" width="184" height="56" loading="lazy" decoding="async"
+              onerror="this.onerror=null;this.src='https://scannables.scdn.co/uri/plain/png/65AEBF/black/640/spotify%3Atrack%3A2HIQKpI6qxrU8LjDLHmbSb';"
+              alt="Spotify code" />
+            <span>19-08-2023</span>
+          </div>
+        </article>
+
+        <!-- Front card: Blinding Lights by The Weeknd -->
+        <article class="card-demo card-front" style="background:#f8f4ef; color:#111;">
+          <div class="card-photo"><img src="./bl.png" alt="Blinding Lights cover" width="512" height="512" decoding="async" /></div>
+          <div class="card-meta">
+            <h4>BLINDING LIGHTS</h4>
+            <p>The Weeknd</p>
+          </div>
+          <div class="card-player">
+            <div class="card-timeline"><span style="width:38%; background:#111;"></span></div>
+            <span style="opacity:0.6; font-size:0.58rem;">1:14 / 3:20</span>
+          </div>
+          <div class="card-actions">
+            <button class="icon-btn" type="button" aria-label="Shuffle">
+              <svg class="shuffle-svg" viewBox="0 0 64 40" aria-hidden="true" focusable="false">
+                <path class="line" d="M2 8h12c9 0 14 3 20 8l8 8c4 4 8 6 14 6h4" />
+                <path class="line" d="M2 32h12c9 0 14-3 20-8l8-8c4-4 8-6 14-6h4" />
+                <path class="head" d="M53 3l11 8-11 8z" />
+                <path class="head" d="M53 21l11 8-11 8z" />
+              </svg>
+            </button>
+            <button class="icon-btn" type="button" aria-label="Previous">&#x23EE;</button>
+            <button class="icon-btn action-primary" type="button" aria-label="Play Pause">&#x23F5;</button>
+            <button class="icon-btn" type="button" aria-label="Next">&#x23ED;</button>
+            <button class="icon-btn liked-btn" type="button" aria-label="Liked">&#10003;</button>
+          </div>
+          <p class="card-lyrics">"I've been tryna call..."<br />"I'm blinded by the lights"</p>
+          <div class="card-bottom">
+            <img src="/api/spotify-code?uri=spotify:track:0VjIjW4GlUZAMYd2vXMi3b&bg=F8F4EF&bars=black" width="184" height="56" loading="lazy" decoding="async"
+              onerror="this.onerror=null;this.src='https://scannables.scdn.co/uri/plain/png/F8F4EF/black/640/spotify%3Atrack%3A0VjIjW4GlUZAMYd2vXMi3b';"
+              alt="Spotify code" />
+            <span>29-11-2019</span>
+          </div>
+        </article>
+      </div>
+    </header>
+
+    <!-- ─── Marquee ─── -->
+    <div class="marquee-strip">
+      <div class="marquee-track">
+        <span>Polaroid Posters</span><span>·</span>
+        <span>Spotify Search</span><span>·</span>
+        <span>Custom Lyrics</span><span>·</span>
+        <span>Print Ready</span><span>·</span>
+        <span>20+ Fonts</span><span>·</span>
+        <span>Scannable Codes</span><span>·</span>
+        <span>6 Themes</span><span>·</span>
+        <span>PNG Export</span><span>·</span>
+        <span>Polaroid Posters</span><span>·</span>
+        <span>Spotify Search</span><span>·</span>
+        <span>Custom Lyrics</span><span>·</span>
+        <span>Print Ready</span><span>·</span>
+        <span>20+ Fonts</span><span>·</span>
+        <span>Scannable Codes</span><span>·</span>
+        <span>6 Themes</span><span>·</span>
+        <span>PNG Export</span><span>·</span>
+      </div>
+    </div>
+
+    <!-- ─── Features ─── -->
+    <section id="features" class="features-section" data-reveal>
+      <div class="section-header">
+        <span class="section-tag">Features</span>
+        <h2>Everything you need to<br /><span class="gradient-text">create stunning posters.</span></h2>
+      </div>
+      <div class="features-grid">
+        <article class="feature-card feature-hero-card">
+          <div class="feature-icon">🎯</div>
           <h3>Precise Track Selection</h3>
-          <p>
-            Pull real Spotify search results, choose the exact track or album,
-            and auto-fill release date, duration, and metadata.
+          <p>Pull real-time results from Spotify. Choose the exact track or album and auto-fill release date, duration,
+            and metadata instantly.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🎨</div>
+          <h3>Creative Control</h3>
+          <p>6 curated templates, fully custom colors, 16 Google Fonts, lyrics, and layout toggles — your poster, your
+            rules.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🖨️</div>
+          <h3>Built For Printing</h3>
+          <p>Stable card ratio with 2x scale PNG export. Quality suitable for real customer orders and professional
+            prints.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">🎵</div>
+          <h3>Auto Lyrics Fetch</h3>
+          <p>Automatically pulls lyrics from multiple providers. Edit them freely or add your own quotes and messages.
           </p>
         </article>
-        <article class="feature">
-          <p class="feature-kicker">02</p>
-          <h3>Creative Control</h3>
-          <p>Templates, custom colors, 20+ fonts, lyrics, custom image, and layout toggles.</p>
+        <article class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3>Scannable Spotify Code</h3>
+          <p>Each poster includes a real Spotify scannable code. Users can scan it with their phone to play the song
+            instantly.</p>
         </article>
-        <article class="feature">
-          <p class="feature-kicker">03</p>
-          <h3>Built For Printing</h3>
-          <p>Stable card ratio, export to PNG, and quality suitable for real customer orders.</p>
+        <article class="feature-card">
+          <div class="feature-icon">💾</div>
+          <h3>Preset Library</h3>
+          <p>Save your favorite theme combinations as presets. Load them instantly for consistent branding across your
+            poster drops.</p>
         </article>
-      </section>
+      </div>
+    </section>
 
-      <section class="process">
-        <h2>From Song To Poster In Minutes</h2>
-        <div class="process-grid">
-          <article><span>Step 1</span><p>Search and lock the song from Spotify.</p></article>
-          <article><span>Step 2</span><p>Customize design, lyrics, and visuals.</p></article>
-          <article><span>Step 3</span><p>Download and print for your customers.</p></article>
-        </div>
-      </section>
+    <!-- ─── Process ─── -->
+    <section id="process" class="process-section" data-reveal>
+      <div class="section-header">
+        <span class="section-tag">How It Works</span>
+        <h2>From song to poster<br /><span class="gradient-text">in three steps.</span></h2>
+      </div>
+      <div class="process-steps">
+        <article class="step-card">
+          <span class="step-number">01</span>
+          <h3>Search & Lock</h3>
+          <p>Type any song or album name. Spotify results appear instantly — pick one and lock it in.</p>
+        </article>
+        <div class="step-connector"><span></span></div>
+        <article class="step-card">
+          <span class="step-number">02</span>
+          <h3>Customize</h3>
+          <p>Choose a template or go fully custom. Adjust colors, fonts, lyrics, and toggle elements on or off.</p>
+        </article>
+        <div class="step-connector"><span></span></div>
+        <article class="step-card">
+          <span class="step-number">03</span>
+          <h3>Export</h3>
+          <p>Download your high-quality PNG. Share it, print it, or sell it — it's ready for anything.</p>
+        </article>
+      </div>
+    </section>
 
-      <!-- <section class="use-cases">
-        <h2>Use Cases</h2>
-        <div class="use-grid">
-          <article><h3>Gifts</h3><p>Personalized song memories for birthdays and surprises.</p></article>
-          <article><h3>Couples</h3><p>Your shared song, printed into a keepsake card.</p></article>
-          <article><h3>Room Decor</h3><p>Build aesthetic walls with favorite tracks and albums.</p></article>
-          <article><h3>Fan Merch</h3><p>Create collectible mini-posters for fandom drops.</p></article>
-        </div>
-      </section> -->
+    <!-- ─── CTA Footer ─── -->
+    <footer class="cta-footer">
+      <div class="cta-glow"></div>
+      <h2>Ready to create<br /><span class="gradient-text">something beautiful?</span></h2>
+      <p>Join creators who are turning their favorite songs into collectible art.</p>
+      <a class="btn-primary btn-large" href="/generator.html">
+        <span>Start Creating Now</span>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </a>
+      <p class="footer-note">Free to use · No sign-up required</p>
+    </footer>
+    <script>
+            (function () {
+        const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-      <footer class="bottom-cta">
-        <h2>Ready to launch your poster shop?</h2>
-        <a class="cta-primary" href="/generator.html">Start Creating</a>
-      </footer>
-    </main>
-  </body>
+        const revealEls = document.querySelectorAll('[data-reveal]');
+        let revealObs = null;
+        if ('IntersectionObserver' in window) {
+          revealObs = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                revealObs.unobserve(entry.target);
+              }
+            });
+          }, { threshold: 0.12 });
+          revealEls.forEach((el) => revealObs.observe(el));
+        } else {
+          revealEls.forEach((el) => el.classList.add('revealed'));
+        }
+
+        document.querySelectorAll('.feature-card').forEach((card, i) => {
+          card.style.transitionDelay = `${i * 80}ms`;
+          card.setAttribute('data-reveal', '');
+          if (revealObs) revealObs.observe(card);
+          else card.classList.add('revealed');
+        });
+        document.querySelectorAll('.step-card').forEach((card, i) => {
+          card.style.transitionDelay = `${i * 120}ms`;
+          card.setAttribute('data-reveal', '');
+          if (revealObs) revealObs.observe(card);
+          else card.classList.add('revealed');
+        });
+
+        const heroVisual = document.getElementById('heroVisual');
+        const cardFront = document.querySelector('.card-front');
+        const cardBack = document.querySelector('.card-back');
+        const visualGlow = document.querySelector('.visual-glow');
+
+        if (!prefersReducedMotion) {
+          let ticking = false;
+          window.addEventListener('scroll', () => {
+            if (!ticking) {
+              requestAnimationFrame(() => {
+                const scrollY = window.scrollY;
+                if (heroVisual && scrollY < 1200) {
+                  const factor = scrollY * 0.15;
+                  if (cardFront) cardFront.style.transform = `translateX(-40px) translateY(${-factor * 0.6}px) rotate(${-6 + scrollY * 0.005}deg)`;
+                  if (cardBack) cardBack.style.transform = `translateX(55px) translateY(${-factor * 0.3}px) rotate(${6 - scrollY * 0.003}deg)`;
+                  if (visualGlow) visualGlow.style.transform = `scale(${1 + scrollY * 0.0003}) translateY(${-scrollY * 0.08}px)`;
+                }
+                ticking = false;
+              });
+              ticking = true;
+            }
+          }, { passive: true });
+        }
+
+        if (heroVisual && !prefersReducedMotion) {
+          heroVisual.addEventListener('mousemove', (e) => {
+            const rect = heroVisual.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            const tiltX = y * -15;
+            const tiltY = x * 15;
+
+            if (cardFront) {
+              cardFront.style.transform = `translateX(-40px) perspective(800px) rotateX(${tiltX * 0.6}deg) rotateY(${tiltY * 0.6}deg) rotate(-6deg)`;
+            }
+            if (cardBack) {
+              cardBack.style.transform = `translateX(55px) perspective(800px) rotateX(${tiltX * 0.4}deg) rotateY(${tiltY * 0.4}deg) rotate(6deg)`;
+            }
+          });
+
+          heroVisual.addEventListener('mouseleave', () => {
+            if (cardFront) cardFront.style.transform = '';
+            if (cardBack) cardBack.style.transform = '';
+          });
+        }
+
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+          if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 60);
+        }, { passive: true });
+      })();
+    </script>
+</body>
+
 </html>
+

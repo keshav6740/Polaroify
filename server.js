@@ -1,15 +1,122 @@
 import express from "express";
+import fs from "fs";
+import os from "os";
+import path from "path";
+import crypto from "crypto";
 
 const app = express();
 const port = process.env.PORT || 8787;
+app.use(express.json({ limit: "35mb" }));
 
 let cachedToken = "";
 let tokenExpiresAt = 0;
+const tokenCachePath = path.join(os.tmpdir(), "spotpost_spotify_token.json");
+const dataDir = path.join(os.tmpdir(), "spotpost-data");
+const ordersDbPath = path.join(dataDir, "order-snapshots.db.json");
+
+function ensureDataDir() {
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+}
+
+function readOrderDb() {
+  ensureDataDir();
+  if (!fs.existsSync(ordersDbPath)) {
+    return { items: {} };
+  }
+  try {
+    const raw = fs.readFileSync(ordersDbPath, "utf8");
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return { items: {} };
+    if (!parsed.items || typeof parsed.items !== "object") return { items: {} };
+    return parsed;
+  } catch {
+    return { items: {} };
+  }
+}
+
+function writeOrderDb(db) {
+  ensureDataDir();
+  const tmpPath = `${ordersDbPath}.tmp`;
+  fs.writeFileSync(tmpPath, JSON.stringify(db, null, 2), "utf8");
+  fs.renameSync(tmpPath, ordersDbPath);
+}
+
+app.post("/api/order-snapshots", (req, res) => {
+  try {
+    const snapshot = req.body?.snapshot;
+    const requestedId = String(req.body?.id || "").trim().toLowerCase();
+    if (!snapshot || typeof snapshot !== "object") {
+      return res.status(400).json({ error: { message: "Missing snapshot payload." } });
+    }
+
+    const payload = JSON.stringify(snapshot);
+    if (Buffer.byteLength(payload, "utf8") > 25 * 1024 * 1024) {
+      return res.status(413).json({ error: { message: "Snapshot payload too large." } });
+    }
+
+    const id = /^[a-f0-9]{16}$/.test(requestedId)
+      ? requestedId
+      : crypto.randomBytes(8).toString("hex");
+    const db = readOrderDb();
+    db.items[id] = {
+      snapshot,
+      createdAt: new Date().toISOString(),
+    };
+    writeOrderDb(db);
+    return res.json({ id });
+  } catch (error) {
+    return res.status(500).json({
+      error: {
+        message:
+          error instanceof Error ? error.message : "Could not save order snapshot.",
+      },
+    });
+  }
+});
+
+app.get("/api/order-snapshots/:id", (req, res) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    if (!/^[a-f0-9]{16}$/i.test(id)) {
+      return res.status(400).json({ error: { message: "Invalid snapshot id." } });
+    }
+
+    const db = readOrderDb();
+    const entry = db.items?.[id];
+    if (!entry) {
+      return res.status(404).json({ error: { message: "Snapshot not found." } });
+    }
+
+    return res.json({ snapshot: entry.snapshot || null, createdAt: entry.createdAt || null });
+  } catch (error) {
+    return res.status(500).json({
+      error: {
+        message:
+          error instanceof Error ? error.message : "Could not load order snapshot.",
+      },
+    });
+  }
+});
 
 async function getAccessToken() {
   const now = Date.now();
   if (cachedToken && now < tokenExpiresAt - 30_000) {
     return cachedToken;
+  }
+
+  try {
+    if (fs.existsSync(tokenCachePath)) {
+      const fileData = JSON.parse(fs.readFileSync(tokenCachePath, "utf8"));
+      if (fileData.token && now < fileData.expiresAt - 30_000) {
+        cachedToken = fileData.token;
+        tokenExpiresAt = fileData.expiresAt;
+        return cachedToken;
+      }
+    }
+  } catch (e) {
+    // Ignore read errors
   }
 
   const clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -40,6 +147,16 @@ async function getAccessToken() {
   const data = await response.json();
   cachedToken = data.access_token;
   tokenExpiresAt = now + (data.expires_in || 3600) * 1000;
+
+  try {
+    fs.writeFileSync(
+      tokenCachePath,
+      JSON.stringify({ token: cachedToken, expiresAt: tokenExpiresAt }),
+    );
+  } catch (e) {
+    // Ignore write errors
+  }
+
   return cachedToken;
 }
 

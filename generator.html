@@ -1,273 +1,333 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Polaroify - Generator</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Caveat:wght@500;700&family=Manrope:wght@400;500;700;800&family=Pacifico&family=Satisfy&family=Space+Grotesk:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <div class="bg-layer"></div>
-    <main class="page">
-      <header class="hero">
-        <p class="kicker">Polaroify Studio</p>
-        <h1>Create Your Polaroid</h1>
-        <p>Step-by-step flow for searching, customizing, and exporting.</p>
-      </header>
 
-      <section class="steps card">
-        <article data-step-indicator="1"><span>1</span><h3>Select Music</h3><p>Choose track/album from Spotify.</p></article>
-        <article data-step-indicator="2"><span>2</span><h3>Customize</h3><p>Edit image, design, and lyrics.</p></article>
-        <article data-step-indicator="3"><span>3</span><h3>Export</h3><p>Download PNG or share.</p></article>
-      </section>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#050507" />
+  <title>Polaroify - Generator</title>
+  <meta name="description"
+    content="Create stunning music polaroid posters with custom colors, lyrics, fonts, and Spotify integration. Export print-ready PNGs." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Caveat:wght@500;700&family=Cinzel:wght@600;800&family=Dancing+Script:wght@600&family=Inconsolata:wght@500;700&family=Inter:wght@400;600;800&family=Lora:ital,wght@0,500;0,700;1,500&family=Manrope:wght@400;500;700;800&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Oswald:wght@500;700&family=Pacifico&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&family=Satisfy&family=Space+Grotesk:wght@400;500;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
 
-      <section class="studio card wizard-layout">
-        <article class="wizard-panel panel-box">
-          <div class="wizard-progress-track" aria-hidden="true">
-            <span id="wizardProgressFill" class="wizard-progress-fill"></span>
+<body>
+  <div class="bg-layer"></div>
+  <main class="page">
+    <header class="hero">
+      <p class="kicker">Polaroify Studio</p>
+      <h1>Create Your Polaroid</h1>
+      <p>Step-by-step flow for searching, customizing, and exporting.</p>
+    </header>
+
+    <section class="steps card">
+      <article data-step-indicator="1"><span>1</span>
+        <h3>Select Music</h3>
+        <p>Choose track/album from Spotify.</p>
+      </article>
+      <article data-step-indicator="2"><span>2</span>
+        <h3>Customize</h3>
+        <p>Edit image, design, and lyrics.</p>
+      </article>
+      <article data-step-indicator="3"><span>3</span>
+        <h3>Export</h3>
+        <p>Download PNG or share.</p>
+      </article>
+    </section>
+
+    <section class="studio card wizard-layout">
+      <article class="wizard-panel panel-box">
+        <div class="wizard-progress-track" aria-hidden="true">
+          <span id="wizardProgressFill" class="wizard-progress-fill"></span>
+        </div>
+        <div id="step1" class="wizard-step active">
+          <h2>Step 1: Select Music</h2>
+          <div class="search-row">
+            <div class="input-group">
+              <label for="searchInput">Song / Album</label>
+              <input id="searchInput" type="text" placeholder="Type a track or album..." autocomplete="off" />
+            </div>
+            <div class="input-group slim">
+              <label for="searchType">Type</label>
+              <select id="searchType">
+                <option value="track">Track</option>
+                <option value="album">Album</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <button id="searchBtn" class="btn">Fetch from Spotify</button>
           </div>
-          <div id="step1" class="wizard-step active">
-            <h2>Step 1: Select Music</h2>
-            <div class="search-row">
-              <div class="input-group">
-                <label for="searchInput">Song / Album</label>
-                <input id="searchInput" type="text" placeholder="Type a track or album..." autocomplete="off" />
+          <p id="statusText" class="status">Search any track or album.</p>
+          <div id="resultsWrap" class="results-wrap">
+            <div id="resultsGrid" class="results-grid"></div>
+          </div>
+          <div class="control-row">
+            <button id="changeSelectionBtn" class="btn btn-secondary hidden" type="button">Change Selection</button>
+          </div>
+        </div>
+
+        <div id="step2" class="wizard-step">
+          <h2>Step 2: Customize</h2>
+          <input id="posterTitle" type="hidden" />
+          <input id="posterArtist" type="hidden" />
+          <input id="playerDuration" type="hidden" value="30" />
+          <div class="tab-row">
+            <button class="tab-btn active" data-tab="design" type="button">Design</button>
+            <button class="tab-btn" data-tab="lyrics" type="button">Lyrics</button>
+            <button class="tab-btn" data-tab="image" type="button">Image</button>
+          </div>
+
+          <div class="tab-panel active" data-panel="design">
+            <div class="ui-card">
+              <h3>Playback & Date</h3>
+              <div class="control-row">
+                <label for="releaseDate">Release Date Label</label>
+                <input id="releaseDate" type="text" />
               </div>
-              <div class="input-group slim">
-                <label for="searchType">Type</label>
-                <select id="searchType">
-                  <option value="track">Track</option>
-                  <option value="album">Album</option>
-                  <option value="both">Both</option>
+              <div class="control-row">
+                <label for="playerProgress">Player Progress</label>
+                <input id="playerProgress" type="range" min="0" max="100" value="0" />
+              </div>
+            </div>
+            <div class="ui-card">
+              <h3>Theme</h3>
+              <div class="control-row split two-col">
+                <button id="themeModeTemplate" class="btn btn-secondary active-mode" type="button">Template
+                  Theme</button>
+                <button id="themeModeCustom" class="btn btn-secondary" type="button">Custom Theme</button>
+              </div>
+              <div id="colorTemplatesWrap" class="control-row">
+                <label>Color Templates</label>
+                <div id="colorTemplates" class="template-grid">
+                  <button class="template-btn" type="button" data-bg="#eadbc4" data-accent="#21160f"
+                    data-font="'Space Grotesk', sans-serif"><span class="swatch"
+                      style="--bg:#eadbc4;--accent:#21160f"></span><span>Vintage</span></button>
+                  <button class="template-btn" type="button" data-bg="#fde7ef" data-accent="#5a2b42"
+                    data-font="'Caveat', cursive"><span class="swatch"
+                      style="--bg:#fde7ef;--accent:#5a2b42"></span><span>Pastel Love</span></button>
+                  <button class="template-btn" type="button" data-bg="#131313" data-accent="#f3f3f3"
+                    data-font="'Manrope', sans-serif"><span class="swatch"
+                      style="--bg:#131313;--accent:#f3f3f3"></span><span>Dark Aesthetic</span></button>
+                  <button class="template-btn" type="button" data-bg="#6ba8b8" data-accent="#0f2331"
+                    data-font="'Space Grotesk', sans-serif"><span class="swatch"
+                      style="--bg:#6ba8b8;--accent:#0f2331"></span><span>Film Grain</span></button>
+                  <button class="template-btn" type="button" data-bg="#f4eee4" data-accent="#4b3a28"
+                    data-font="'Satisfy', cursive"><span class="swatch"
+                      style="--bg:#f4eee4;--accent:#4b3a28"></span><span>Scrapbook</span></button>
+                  <button class="template-btn" type="button" data-bg="#2b2a3a" data-accent="#f6d78f"
+                    data-font="'Pacifico', cursive"><span class="swatch"
+                      style="--bg:#2b2a3a;--accent:#f6d78f"></span><span>Cassette Tape</span></button>
+                </div>
+              </div>
+              <div id="customColorWrap" class="control-row split two-col custom-color-grid hidden">
+                <div class="color-card">
+                  <label for="polaroidColor">Polaroid Color</label>
+                  <input id="polaroidColor" type="color" value="#f5f0e6" />
+                </div>
+                <div class="color-card">
+                  <label for="accentColor">Accent Color</label>
+                  <input id="accentColor" type="color" value="#0d0d0d" />
+                </div>
+                <p id="contrastWarning" class="status hidden"
+                  style="grid-column: 1 / -1; margin: 0; color: #ff5555; font-size: 0.8rem; font-weight: 500;">Warning:
+                  Low contrast colors.</p>
+              </div>
+            </div>
+            <div class="ui-card">
+              <h3>Typography</h3>
+              <div class="control-row">
+                <select id="fontSelect">
+                  <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+                  <option value="'Manrope', sans-serif">Manrope</option>
+                  <option value="'Inter', sans-serif">Inter</option>
+                  <option value="'Roboto', sans-serif">Roboto</option>
+                  <option value="'Oswald', sans-serif">Oswald</option>
+                  <option value="'Abril Fatface', serif">Abril Fatface</option>
+                  <option value="'Playfair Display', serif">Playfair Display</option>
+                  <option value="'Merriweather', serif">Merriweather</option>
+                  <option value="'Lora', serif">Lora</option>
+                  <option value="'Cinzel', serif">Cinzel</option>
+                  <option value="'Anton', sans-serif">Anton</option>
+                  <option value="'Caveat', cursive">Caveat</option>
+                  <option value="'Pacifico', cursive">Pacifico</option>
+                  <option value="'Satisfy', cursive">Satisfy</option>
+                  <option value="'Dancing Script', cursive">Dancing Script</option>
+                  <option value="'Inconsolata', monospace">Inconsolata</option>
                 </select>
               </div>
-              <button id="searchBtn" class="btn">Fetch from Spotify</button>
             </div>
-            <p id="statusText" class="status">Search any track or album.</p>
-            <div id="resultsWrap" class="results-wrap"><div id="resultsGrid" class="results-grid"></div></div>
-            <div class="control-row">
-              <button id="changeSelectionBtn" class="btn btn-secondary hidden" type="button">Change Selection</button>
+            <div class="ui-card">
+              <h3>Visibility</h3>
+              <div class="toggles toggles-compact">
+                <div class="toggle-item toggle-compact"><span>Show Spotify Code</span><input id="toggleCode"
+                    type="checkbox" checked />
+                </div>
+                <div class="toggle-item toggle-compact"><span>Show Play Bar</span><input id="togglePlayer"
+                    type="checkbox" checked />
+                </div>
+                <div class="toggle-item toggle-compact"><span>Show Action Buttons</span><input id="toggleActions"
+                    type="checkbox" checked /></div>
+                <div class="toggle-item toggle-compact"><span>Show Release Date</span><input id="toggleDate"
+                    type="checkbox" checked /></div>
+              </div>
             </div>
           </div>
 
-          <div id="step2" class="wizard-step">
-            <h2>Step 2: Customize</h2>
-            <input id="posterTitle" type="hidden" />
-            <input id="posterArtist" type="hidden" />
-            <input id="playerDuration" type="hidden" value="30" />
-            <div class="tab-row">
-              <button class="tab-btn active" data-tab="design" type="button">Design</button>
-              <button class="tab-btn" data-tab="lyrics" type="button">Lyrics</button>
-              <button class="tab-btn" data-tab="image" type="button">Image</button>
+          <div class="tab-panel" data-panel="lyrics">
+            <div class="ui-card">
+              <h3>Lyrics</h3>
+              <div class="control-row">
+                <label for="lyricsLineCount">Preview Lines</label>
+                <select id="lyricsLineCount">
+                  <option value="3">3 lines</option>
+                  <option value="4">4 lines</option>
+                  <option value="5">5 lines</option>
+                </select>
+              </div>
+              <div class="control-row">
+                <label for="lyricsText">Lyrics / Quote</label>
+                <textarea id="lyricsText"
+                  placeholder="Original lyrics will load automatically for tracks..."></textarea>
+              </div>
+              <p id="lyricsFitHint" class="status hidden">Tip: These lines are long. Try 4 lines for cleaner spacing.</p>
+              <div class="toggles">
+                <div class="toggle-item"><span>Show Lyrics</span><input id="toggleLyrics" type="checkbox" checked />
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div class="tab-panel active" data-panel="design">
-              <div class="ui-card">
-                <h3>Playback & Date</h3>
-                <div class="control-row">
-                  <label for="releaseDate">Release Date Label</label>
-                  <input id="releaseDate" type="text" />
-                </div>
-                <div class="control-row">
-                  <label for="playerProgress">Player Progress</label>
-                  <input id="playerProgress" type="range" min="0" max="100" value="0" />
-                </div>
+          <div class="tab-panel" data-panel="image">
+            <div class="ui-card">
+              <h3>Image & Code</h3>
+              <div class="control-row">
+                <label for="customImageInput">Custom Image (optional)</label>
+                <input id="customImageInput" type="file" accept="image/*" />
+                <label><input id="useCustomImage" type="checkbox" /> Use custom image</label>
               </div>
-              <div class="ui-card">
-                <h3>Theme</h3>
-                <div class="control-row split two-col">
-                  <button id="themeModeTemplate" class="btn btn-secondary active-mode" type="button">Template Theme</button>
-                  <button id="themeModeCustom" class="btn btn-secondary" type="button">Custom Theme</button>
-                </div>
-                <div id="colorTemplatesWrap" class="control-row">
-                  <label>Color Templates</label>
-                  <div id="colorTemplates" class="template-grid">
-                    <button class="template-btn" type="button" data-bg="#eadbc4" data-accent="#21160f" data-font="'Space Grotesk', sans-serif"><span class="swatch" style="--bg:#eadbc4;--accent:#21160f"></span><span>Vintage</span></button>
-                    <button class="template-btn" type="button" data-bg="#fde7ef" data-accent="#5a2b42" data-font="'Caveat', cursive"><span class="swatch" style="--bg:#fde7ef;--accent:#5a2b42"></span><span>Pastel Love</span></button>
-                    <button class="template-btn" type="button" data-bg="#131313" data-accent="#f3f3f3" data-font="'Manrope', sans-serif"><span class="swatch" style="--bg:#131313;--accent:#f3f3f3"></span><span>Dark Aesthetic</span></button>
-                    <button class="template-btn" type="button" data-bg="#6ba8b8" data-accent="#0f2331" data-font="'Space Grotesk', sans-serif"><span class="swatch" style="--bg:#6ba8b8;--accent:#0f2331"></span><span>Film Grain</span></button>
-                    <button class="template-btn" type="button" data-bg="#f4eee4" data-accent="#4b3a28" data-font="'Satisfy', cursive"><span class="swatch" style="--bg:#f4eee4;--accent:#4b3a28"></span><span>Scrapbook</span></button>
-                    <button class="template-btn" type="button" data-bg="#2b2a3a" data-accent="#f6d78f" data-font="'Pacifico', cursive"><span class="swatch" style="--bg:#2b2a3a;--accent:#f6d78f"></span><span>Cassette Tape</span></button>
-                  </div>
-                </div>
-                <div id="customColorWrap" class="control-row split two-col custom-color-grid hidden">
-                  <div class="color-card">
-                    <label for="polaroidColor">Polaroid Color</label>
-                    <input id="polaroidColor" type="color" value="#f5f0e6" />
-                  </div>
-                  <div class="color-card">
-                    <label for="accentColor">Accent Color</label>
-                    <input id="accentColor" type="color" value="#0d0d0d" />
-                  </div>
-                </div>
-              </div>
-              <div class="ui-card">
-                <h3>Typography & Visibility</h3>
-                <div class="control-row">
-                  <label for="fontSelect">Typography</label>
-                  <select id="fontSelect">
-                    <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
-                    <option value="'Manrope', sans-serif">Manrope</option>
-                    <option value="'Abril Fatface', serif">Abril Fatface</option>
-                    <option value="Georgia, serif">Georgia</option>
-                    <option value="'Times New Roman', serif">Times New Roman</option>
-                    <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                    <option value="'Segoe UI', sans-serif">Segoe UI</option>
-                    <option value="Tahoma, sans-serif">Tahoma</option>
-                    <option value="Verdana, sans-serif">Verdana</option>
-                    <option value="'Courier New', monospace">Courier New</option>
-                    <option value="'Lucida Console', monospace">Lucida Console</option>
-                    <option value="'Palatino Linotype', serif">Palatino</option>
-                    <option value="'Garamond', serif">Garamond</option>
-                    <option value="'Bookman Old Style', serif">Bookman</option>
-                    <option value="'Franklin Gothic Medium', sans-serif">Franklin Gothic</option>
-                    <option value="'Century Gothic', sans-serif">Century Gothic</option>
-                    <option value="'Arial Black', sans-serif">Arial Black</option>
-                    <option value="'Impact', sans-serif">Impact</option>
-                    <option value="'Copperplate', fantasy">Copperplate</option>
-                    <option value="'Comic Sans MS', cursive">Comic Sans</option>
-                    <option value="'Gill Sans', sans-serif">Gill Sans</option>
-                    <option value="'Helvetica', sans-serif">Helvetica</option>
-                    <option value="'Optima', sans-serif">Optima</option>
-                    <option value="'Caveat', cursive">Caveat</option>
-                    <option value="'Pacifico', cursive">Pacifico</option>
-                    <option value="'Satisfy', cursive">Satisfy</option>
+              <div class="control-row split">
+                <div class="input-group" style="padding-top: 5px;">
+                  <label for="imageFit">Image Fit</label>
+                  <select id="imageFit">
+                    <option value="cover">Cover (Crop to fill)</option>
+                    <option value="contain">Contain (Show full image)</option>
                   </select>
                 </div>
-                <div class="toggles">
-                  <div class="toggle-item"><span>Show Spotify Code</span><input id="toggleCode" type="checkbox" checked /></div>
-                  <div class="toggle-item"><span>Show Play Bar</span><input id="togglePlayer" type="checkbox" checked /></div>
-                  <div class="toggle-item"><span>Show Action Buttons</span><input id="toggleActions" type="checkbox" checked /></div>
-                </div>
+              </div>
+              <div class="control-row">
+                <label for="codeOpacity">Spotify Code Opacity</label>
+                <input id="codeOpacity" type="range" min="10" max="100" value="80" />
               </div>
             </div>
-
-            <div class="tab-panel" data-panel="lyrics">
-              <div class="ui-card">
-                <h3>Lyrics</h3>
-                <div class="control-row">
-                  <label for="lyricsText">Lyrics / Quote</label>
-                  <textarea id="lyricsText" placeholder="Original lyrics will load automatically for tracks..."></textarea>
-                </div>
-                <div class="toggles">
-                  <div class="toggle-item"><span>Show Lyrics</span><input id="toggleLyrics" type="checkbox" checked /></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="tab-panel" data-panel="image">
-              <div class="ui-card">
-                <h3>Image & Code</h3>
-                <div class="control-row">
-                  <label for="customImageInput">Custom Image (optional)</label>
-                  <input id="customImageInput" type="file" accept="image/*" />
-                  <label><input id="useCustomImage" type="checkbox" /> Use custom image</label>
-                </div>
-                <div class="control-row">
-                  <label for="codeOpacity">Spotify Code Opacity</label>
-                  <input id="codeOpacity" type="range" min="10" max="100" value="80" />
-                </div>
-              </div>
-            </div>
-
           </div>
 
-          <div id="step3" class="wizard-step">
-            <h2>Step 3: Export & Share</h2>
-            <p class="export-intro">Finalize your poster, save presets, and export in one click.</p>
-            <div class="export-grid">
-              <section class="export-card export-card-primary">
-                <h3>Export Poster</h3>
-                <p>High-quality PNG ready for print and customer delivery.</p>
-                <div class="export-actions">
-                  <button id="downloadPngBtn" class="btn" type="button">Download PNG</button>
-                  <button id="resetDefaultsBtn" class="btn btn-secondary" type="button">Reset Defaults</button>
-                </div>
-              </section>
+        </div>
 
-              <section class="export-card">
-                <h3>Share Generator</h3>
-                <p>Send this page to collaborators or clients.</p>
-                <div class="export-actions">
-                  <button id="copyLinkBtn" class="btn btn-secondary" type="button">Copy Page Link</button>
-                  <button id="shareSocialBtn" class="btn btn-secondary" type="button">Share to WhatsApp / Instagram</button>
-                </div>
-              </section>
-            </div>
-
-            <section class="export-card preset-card">
-              <h3>Preset Library</h3>
-              <p>Save your theme and layout settings for future posters.</p>
-              <div class="preset-stack">
-                <label for="presetName">Save Preset</label>
-                <div class="preset-row">
-                  <input id="presetName" type="text" placeholder="Preset name" />
-                  <button id="savePresetBtn" class="btn btn-secondary" type="button">Save</button>
-                </div>
+        <div id="step3" class="wizard-step">
+          <h2>Step 3: Export & Share</h2>
+          <p class="export-intro">Finalize your poster, save presets, and export in one click.</p>
+          <div class="export-grid">
+            <section class="export-card export-card-primary">
+              <h3>Export Options</h3>
+              <p>Download your poster as a high-quality PNG.</p>
+              <div class="export-actions">
+                <button id="downloadPngBtn" class="btn" type="button">Download PNG (High Quality)</button>
+                <button id="resetDefaultsBtn" class="btn btn-secondary" type="button">Reset Defaults</button>
               </div>
-              <div class="preset-stack">
-                <label for="presetSelect">Load Preset</label>
-                <div class="preset-row">
-                  <select id="presetSelect"></select>
-                  <button id="loadPresetBtn" class="btn btn-secondary" type="button">Load</button>
-                  <button id="deletePresetBtn" class="btn btn-secondary" type="button">Delete</button>
-                </div>
+            </section>
+
+            <section class="export-card">
+              <h3>Share Generator</h3>
+              <p>Send this page to collaborators or clients.</p>
+              <div class="export-actions">
+                <button id="copyLinkBtn" class="btn btn-secondary" type="button">Copy Page Link</button>
+                <button id="shareSocialBtn" class="btn btn-secondary" type="button">Share to WhatsApp /
+                  Instagram</button>
               </div>
             </section>
           </div>
-        </article>
 
-        <article class="preview-wrap">
-          <h2>Live Preview</h2>
-          <div id="poster" class="poster">
-            <div class="poster-photo-wrap"><img id="coverArt" src="" alt="Selected album cover" /></div>
-            <div class="poster-main">
-              <h3 id="previewTitle">No song selected yet</h3>
-              <p class="artist-row"><span id="explicitBadge" class="explicit-badge hidden">E</span><span id="previewArtist">Pick a track or album from results</span></p>
+          <section class="export-card preset-card">
+            <h3>Preset Library</h3>
+            <p>Save your theme and layout settings for future posters.</p>
+            <div class="preset-stack">
+              <label for="presetName">Save Preset</label>
+              <div class="preset-row">
+                <input id="presetName" type="text" placeholder="Preset name" />
+                <button id="savePresetBtn" class="btn btn-secondary" type="button">Save</button>
+              </div>
             </div>
-            <div id="playerBar" class="player">
-              <div class="timeline"><div id="timelineFill" class="timeline-fill"></div></div>
-              <span id="timeLabel">0:00 / 0:30</span>
+            <div class="preset-stack">
+              <label for="presetSelect">Load Preset</label>
+              <div class="preset-row">
+                <select id="presetSelect"></select>
+                <button id="loadPresetBtn" class="btn btn-secondary" type="button">Load</button>
+                <button id="deletePresetBtn" class="btn btn-secondary" type="button">Delete</button>
+              </div>
             </div>
-            <div class="music-actions" aria-label="Poster controls visual row">
-              <button id="btnShuffle" class="icon-btn" type="button" aria-label="Shuffle">
-                <svg class="shuffle-svg" viewBox="0 0 64 40" aria-hidden="true" focusable="false">
-                  <path class="line" d="M2 8h12c9 0 14 3 20 8l8 8c4 4 8 6 14 6h4" />
-                  <path class="line" d="M2 32h12c9 0 14-3 20-8l8-8c4-4 8-6 14-6h4" />
-                  <path class="head" d="M53 3l11 8-11 8z" />
-                  <path class="head" d="M53 21l11 8-11 8z" />
-                </svg>
-              </button>
-              <button id="btnPrev" class="icon-btn" type="button" aria-label="Previous">&#x23EE;</button>
-              <button id="btnPlayPause" class="icon-btn action-primary" type="button" aria-label="Play Pause">&#x23F5;</button>
-              <button id="btnNext" class="icon-btn" type="button" aria-label="Next">&#x23ED;</button>
-              <button id="btnLiked" class="icon-btn liked-btn" type="button" aria-label="Liked">&#10003;</button>
+          </section>
+        </div>
+      </article>
+
+      <article class="preview-wrap">
+        <h2>Live Preview</h2>
+        <div id="poster" class="poster">
+          <div class="poster-photo-wrap"><img id="coverArt" src="" alt="Selected album cover" /></div>
+          <div class="poster-main">
+            <h3 id="previewTitle">No song selected yet</h3>
+            <p class="artist-row"><span id="explicitBadge" class="explicit-badge hidden">E</span><span
+                id="previewArtist">Pick a track or album from results</span></p>
+          </div>
+          <div id="playerBar" class="player">
+            <div class="timeline">
+              <div id="timelineFill" class="timeline-fill"></div>
             </div>
-            <div id="lyricsBlock" class="lyrics-block"><p id="previewLyrics">Your custom lyrics will appear here.</p></div>
+            <span id="timeLabel">0:00 / 0:30</span>
+          </div>
+          <div class="music-actions" aria-label="Poster controls visual row">
+            <button id="btnShuffle" class="icon-btn" type="button" aria-label="Shuffle">
+              <svg class="shuffle-svg" viewBox="0 0 64 40" aria-hidden="true" focusable="false">
+                <path class="line" d="M2 8h12c9 0 14 3 20 8l8 8c4 4 8 6 14 6h4" />
+                <path class="line" d="M2 32h12c9 0 14-3 20-8l8-8c4-4 8-6 14-6h4" />
+                <path class="head" d="M53 3l11 8-11 8z" />
+                <path class="head" d="M53 21l11 8-11 8z" />
+              </svg>
+            </button>
+            <button id="btnPrev" class="icon-btn" type="button" aria-label="Previous">&#x23EE;</button>
+            <button id="btnPlayPause" class="icon-btn action-primary" type="button"
+              aria-label="Play Pause">&#x23F5;</button>
+            <button id="btnNext" class="icon-btn" type="button" aria-label="Next">&#x23ED;</button>
+            <button id="btnLiked" class="icon-btn liked-btn" type="button" aria-label="Liked">&#10003;</button>
+          </div>
+          <div id="lyricsBlock" class="lyrics-block">
+            <p id="previewLyrics">Your custom lyrics will appear here.</p>
+          </div>
+          <footer class="poster-footer">
             <div id="spotifyCodeWrap" class="spotify-code-wrap"><img id="spotifyCode" alt="Spotify Code" /></div>
-            <footer class="poster-footer"><p id="releaseDatePreview">--</p></footer>
-          </div>
-          <div class="preview-step-nav" data-step-nav="1">
-            <button id="step1Next" class="btn" type="button">Next</button>
-          </div>
-          <div class="preview-step-nav" data-step-nav="2">
-            <button id="step2Back" class="btn btn-secondary" type="button">Back</button>
-            <button id="step2Next" class="btn" type="button">Next</button>
-          </div>
-          <div class="preview-step-nav" data-step-nav="3">
-            <button id="step3Back" class="btn btn-secondary" type="button">Back</button>
-          </div>
-        </article>
-      </section>
-    </main>
+            <p id="releaseDatePreview">--</p>
+          </footer>
+        </div>
+        <div class="preview-step-nav" data-step-nav="1">
+          <button id="step1Next" class="btn" type="button">Next</button>
+        </div>
+        <div class="preview-step-nav" data-step-nav="2">
+          <button id="step2Back" class="btn btn-secondary" type="button">Back</button>
+          <button id="step2Next" class="btn" type="button">Next</button>
+        </div>
+        <div class="preview-step-nav" data-step-nav="3">
+          <button id="step3Back" class="btn btn-secondary" type="button">Back</button>
+        </div>
+      </article>
+    </section>
+  </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script type="module" src="./app.js"></script>
-  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+
 </html>
