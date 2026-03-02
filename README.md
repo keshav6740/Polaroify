@@ -1,37 +1,52 @@
 # Polaroify
 
-Custom Spotify polaroid/poster generator.
+Turn songs into collectible polaroid-style posters.
 
-## Run
+![Polaroify Banner](./polaroify.png)
+
+![Live](https://img.shields.io/badge/Live-polaroify.vercel.app-16a34a?style=for-the-badge)
+![Vite](https://img.shields.io/badge/Vite-7.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Node](https://img.shields.io/badge/Node-Express-111827?style=for-the-badge&logo=nodedotjs&logoColor=green)
+![Spotify](https://img.shields.io/badge/Spotify-API-1DB954?style=for-the-badge&logo=spotify&logoColor=white)
+
+## Live Site
+
+**https://polaroify.vercel.app**
+
+## What It Does
+
+- Search Spotify tracks/albums in real time.
+- Auto-fill cover art, metadata, date, and Spotify code.
+- Auto-fetch lyrics (with manual override).
+- Customize colors, typography, visibility, and image fit.
+- Choose lyrics preview length (3 / 4 / 5 lines).
+- Export as high-quality PNG (free).
+
+## Tech Stack
+
+- Frontend: HTML, CSS, Vanilla JS, Vite
+- Backend: Node.js, Express
+- APIs: Spotify Web API, lrclib, lyrics.ovh
+
+## Local Setup
 
 1. Install dependencies:
    `npm install`
-2. Create `.env` from `.env.example` and set:
+2. Create `.env` and add:
    - `SPOTIFY_CLIENT_ID`
    - `SPOTIFY_CLIENT_SECRET`
-3. Start app:
+3. Run in dev:
    `npm run dev`
-4. Open the Vite URL from terminal.
-5. Search a track/album and pick a result.
-6. Customize title, artist, lyrics, colors, typography, and layout toggles.
+4. Open the local URL shown in terminal (usually `http://localhost:5173`).
 
-## Auth model
+## Authentication Model
 
-- Users do not log in.
-- Users do not paste any token.
-- Server uses Spotify Client Credentials flow and caches the app token.
-
-## New poster behavior
-
-- Search results collapse after selecting a song; use `Change Selection` to reopen.
-- Track lyrics are auto-fetched from server providers (`lrclib` with fallback to `lyrics.ovh`).
-- Users can still fully override lyrics manually.
-- Poster is print-first (no action buttons on the polaroid).
-- Spotify code is blended into bottom-left and color-matched to poster theme.
-- Player timeline is decorative/customizable for design use.
-- Use `Download PNG` to export the final polaroid.
+- No user login required.
+- No user token required.
+- Server uses Spotify Client Credentials flow and caches app tokens.
 
 ## Notes
 
-- Spotify preview audio is only available for some tracks (`preview_url` may be null).
-- Spotify Code image is generated from the selected Spotify URI.
+- Spotify preview audio is not guaranteed for every track (`preview_url` may be null).
+- Spotify code image is generated from the selected Spotify URI.
+- If lyrics are unavailable from one provider, fallback providers are used.
