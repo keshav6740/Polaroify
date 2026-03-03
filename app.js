@@ -323,6 +323,8 @@ async function selectItem(item) {
   if (isTrack) {
     setLyricsPanelEnabled(true);
     els.toggleLyrics.checked = true;
+    els.togglePlayer.checked = true;
+    els.toggleActions.checked = true;
     await fetchAndSetLyrics(title, artists);
     setStatus(
       `Track selected. Duration auto-set to ${els.playerDuration.value}s from Spotify.`,
@@ -330,13 +332,15 @@ async function selectItem(item) {
   } else {
     setLyricsPanelEnabled(false);
     els.toggleLyrics.checked = false;
+    els.togglePlayer.checked = false;
+    els.toggleActions.checked = false;
     els.lyricsText.value = "";
     els.previewLyrics.textContent = "No default lyrics for albums. Add your own text.";
     await fetchAndSetAlbumTracks(albumId, title);
   }
 
   applyCustomizations();
-  els.step1Next.disabled = false;
+  els.step1Next.disabled = false; goToStep(2);
 }
 
 async function fetchAndSetAlbumTracks(albumId, albumTitle = "Album") {
@@ -1267,6 +1271,18 @@ async function sharePosterToApp() {
   });
 });
 
+document.querySelectorAll("[data-step-indicator]").forEach((indicator) => {
+  indicator.addEventListener("click", () => {
+    // Only allow clicking forward if we have selected a track (or clicking back freely)
+    const targetStep = parseInt(indicator.getAttribute("data-step-indicator"), 10);
+    if (targetStep > 1 && !state.selected) {
+      setStatus("Select a track or album first to continue.");
+      return;
+    }
+    goToStep(targetStep);
+  });
+});
+
 function setLyricsPanelEnabled(enabled) {
   const tabBtn = document.querySelector('.tab-btn[data-tab="lyrics"]');
   const panel = document.querySelector('.tab-panel[data-panel="lyrics"]');
@@ -1401,7 +1417,7 @@ els.imageEditorCanvas?.addEventListener("pointermove", (event) => {
     isDraggingImageEditor = false;
     try {
       els.imageEditorCanvas.releasePointerCapture(event.pointerId);
-    } catch {}
+    } catch { }
   });
 });
 
@@ -1666,7 +1682,7 @@ function trackEvent(event, payload = {}) {
     headers: { "Content-Type": "application/json" },
     body,
     keepalive: true,
-  }).catch(() => {});
+  }).catch(() => { });
 }
 
 function getOrCreateSessionId() {

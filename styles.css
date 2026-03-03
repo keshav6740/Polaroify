@@ -1019,7 +1019,7 @@ input[type="range"] {
   background: #e8e0d1;
   color: #111;
   border-radius: 0;
-  padding: 24.6px 0;
+  padding: 24.6px 0 76px;
   position: relative;
   box-shadow:
     0 20px 50px rgba(0, 0, 0, 0.5),
@@ -1123,6 +1123,22 @@ html.theme-transition .poster {
   line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Override for artist-row: flex must win over -webkit-box so the explicit
+   badge and artist name sit on the same baseline properly. */
+.poster-main p.artist-row {
+  display: flex;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  -webkit-box-orient: unset;
+}
+
+.artist-row #previewArtist {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .artist-row {
@@ -1394,13 +1410,14 @@ html.theme-transition .poster {
 }
 
 .poster-footer {
+  position: absolute;
+  bottom: 24.6px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 354px;
-  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 4px;
-  position: relative;
   z-index: 2;
 }
 
@@ -1495,7 +1512,7 @@ html.theme-transition .poster {
 }
 
 .poster[data-layout="full-cover"] {
-  padding: 0;
+  padding: 0 0 18px;
   justify-content: flex-end;
   color: #fff !important;
   --tracklist-align: left;
@@ -1537,10 +1554,33 @@ html.theme-transition .poster {
   width: 350px;
 }
 
+/* Ensure footer works with flex alignment in full cover */
+.poster[data-layout="full-cover"] .poster-footer {
+  bottom: auto;
+  left: auto;
+  transform: none;
+  margin-top: auto;
+  justify-content: space-between;
+}
+
+/* Make Spotify code background transparent by blending */
+.poster[data-layout="full-cover"] .spotify-code-wrap img {
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+}
+
+:root[data-theme="dark"] .poster[data-layout="full-cover"] .spotify-code-wrap img {
+  mix-blend-mode: screen;
+}
+
 .poster[data-layout="full-cover"] .poster-main {
   margin-top: auto;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.22));
   padding-top: 0.35rem;
+}
+
+.poster[data-layout="full-cover"] .poster-footer {
+  margin-top: 0;
 }
 
 .poster[data-layout="full-cover"] .poster-main h3 {
@@ -1667,21 +1707,31 @@ html.theme-transition .poster {
 .reserved-hidden {
   visibility: hidden;
   height: 0;
+  flex-basis: 0;
+  min-height: 0;
   overflow: hidden;
-  margin: 0;
+  margin: 0 !important;
   padding: 0;
 }
 
 .poster.compact-player .player {
   visibility: hidden;
   height: 0;
+  flex-basis: 0;
+  min-height: 0;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 .poster.compact-actions .music-actions {
   visibility: hidden;
   height: 0;
+  flex-basis: 0;
+  min-height: 0;
   overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1806,6 +1856,7 @@ html.theme-transition .poster {
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+
   .card,
   .panel-box,
   .ui-card,

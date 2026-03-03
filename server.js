@@ -605,8 +605,7 @@ function normalizeLyrics(raw) {
   const lines = String(raw || "")
     .split("\n")
     .map((line) => line.trim())
-    .filter(Boolean)
-    .slice(0, 18);
+    .filter(Boolean);
 
   if (!lines.length) return "";
   return lines.join("\n");
