@@ -436,7 +436,14 @@ function updateSpotifyCode(force = false) {
 
   const encoded = encodeURIComponent(state.codeUri);
   const raw = state.codeUri;
-  const bgHex = (els.polaroidColor.value || "#F5F0E6").replace("#", "").toUpperCase();
+  let bgHex = (els.polaroidColor.value || "#F5F0E6").replace("#", "").toUpperCase();
+
+  const layout = els.posterLayout?.value || "standard";
+  if (layout === "full-cover") {
+    const isDarkTheme = document.documentElement.getAttribute("data-theme") === "dark";
+    bgHex = isDarkTheme ? "000000" : "FFFFFF";
+  }
+
   const darkBg = isDarkHexColor(bgHex);
   const primaryBg = bgHex;
   const primaryBars = darkBg ? "white" : "black";
