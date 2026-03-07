@@ -554,6 +554,7 @@ textarea {
 .btn-secondary {
   background: var(--surface-2);
   border: 1px solid var(--border);
+  color: var(--ink);
   box-shadow: none;
 }
 
