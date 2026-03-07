@@ -220,7 +220,7 @@
                 </select>
               </div>
             </div>
-            <div class="ui-card">
+            <div id="albumTracklistCard" class="ui-card hidden">
               <h3>Album Tracklist</h3>
               <div class="control-row split two-col">
                 <div class="input-group">
@@ -265,7 +265,7 @@
             <div class="ui-card">
               <h3>Visibility</h3>
               <div class="toggles toggles-compact">
-                <div class="toggle-item toggle-compact"><span>Show Album Tracklist</span><input id="toggleTracklist"
+                <div id="toggleTracklistRow" class="toggle-item toggle-compact hidden"><span>Show Album Tracklist</span><input id="toggleTracklist"
                     type="checkbox" checked />
                 </div>
                 <div class="toggle-item toggle-compact"><span>Auto-clean Title</span><input id="toggleAutoCleanTitle"
@@ -306,6 +306,16 @@
                 <label for="lyricsText">Lyrics / Quote</label>
                 <textarea id="lyricsText"
                   placeholder="Original lyrics will load automatically for tracks..."></textarea>
+              </div>
+              <div class="control-row split two-col">
+                <div class="input-group">
+                  <label for="lyricsOffsetX">Lyrics Horizontal Position</label>
+                  <input id="lyricsOffsetX" type="range" min="-80" max="80" step="1" value="0" />
+                </div>
+                <div class="input-group">
+                  <label for="lyricsOffsetY">Lyrics Vertical Position</label>
+                  <input id="lyricsOffsetY" type="range" min="-120" max="120" step="1" value="0" />
+                </div>
               </div>
               <p id="lyricsFitHint" class="status hidden">Tip: These lines are long. Try 4 lines for cleaner spacing.
               </p>

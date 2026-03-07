@@ -1039,6 +1039,8 @@ input[type="range"] {
   --tracklist-font-size: 0.71rem;
   --tracklist-columns: 1;
   --fade-bottom-color: rgba(232, 224, 209, 0.95);
+  --lyrics-offset-x: 0px;
+  --lyrics-offset-y: 0px;
 }
 
 :root[data-theme="light"] .poster {
@@ -1263,6 +1265,7 @@ html.theme-transition .poster {
 .lyrics-block {
   font-size: 0.8rem;
   line-height: 1.4;
+  transform: translate(var(--lyrics-offset-x), var(--lyrics-offset-y));
 }
 
 .tracklist-block {

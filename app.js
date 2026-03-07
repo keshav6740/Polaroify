@@ -36,6 +36,8 @@ const els = {
   releaseDate: document.getElementById("releaseDate"),
   releaseDatePreview: document.getElementById("releaseDatePreview"),
   lyricsLineCount: document.getElementById("lyricsLineCount"),
+  lyricsOffsetX: document.getElementById("lyricsOffsetX"),
+  lyricsOffsetY: document.getElementById("lyricsOffsetY"),
   lyricsText: document.getElementById("lyricsText"),
   lyricsFitHint: document.getElementById("lyricsFitHint"),
   tracklistCount: document.getElementById("tracklistCount"),
@@ -43,6 +45,8 @@ const els = {
   tracklistSpacing: document.getElementById("tracklistSpacing"),
   tracklistAlign: document.getElementById("tracklistAlign"),
   tracklistFontSize: document.getElementById("tracklistFontSize"),
+  albumTracklistCard: document.getElementById("albumTracklistCard"),
+  toggleTracklistRow: document.getElementById("toggleTracklistRow"),
   previewLyrics: document.getElementById("previewLyrics"),
   previewTracklist: document.getElementById("previewTracklist"),
   playerDuration: document.getElementById("playerDuration"),
@@ -135,6 +139,8 @@ const DEFAULTS = {
   fontSelect: "'Space Grotesk', sans-serif",
   posterLayout: "standard",
   lyricsLineCount: "3",
+  lyricsOffsetX: "0",
+  lyricsOffsetY: "0",
   tracklistCount: "10",
   tracklistStyle: "numbered",
   tracklistSpacing: "1.15",
@@ -323,6 +329,7 @@ async function selectItem(item) {
 
   if (isTrack) {
     setLyricsPanelEnabled(true);
+    setAlbumTracklistControlsVisible(false);
     els.toggleLyrics.checked = true;
     els.togglePlayer.checked = true;
     els.toggleActions.checked = true;
@@ -332,6 +339,7 @@ async function selectItem(item) {
     );
   } else {
     setLyricsPanelEnabled(false);
+    setAlbumTracklistControlsVisible(true);
     els.toggleLyrics.checked = false;
     els.togglePlayer.checked = false;
     els.toggleActions.checked = false;
@@ -496,6 +504,8 @@ function applyCustomizations() {
   const date = els.releaseDate.value.trim();
   const lyrics = els.lyricsText.value.trim();
   const lyricsLineCount = Number.parseInt(els.lyricsLineCount?.value || "3", 10);
+  const lyricsOffsetX = Number.parseInt(els.lyricsOffsetX?.value || "0", 10);
+  const lyricsOffsetY = Number.parseInt(els.lyricsOffsetY?.value || "0", 10);
   const posterLayout = els.posterLayout?.value || "standard";
   const tracklistStyle = els.tracklistStyle?.value || "numbered";
   const tracklistAlign = els.tracklistAlign?.value || "left";
@@ -533,6 +543,8 @@ function applyCustomizations() {
   els.poster.style.setProperty("--tracklist-line-height", String(Math.max(0.9, Math.min(1.8, tracklistSpacing))));
   els.poster.style.setProperty("--tracklist-align", tracklistAlign);
   els.poster.style.setProperty("--tracklist-font-size", `${Math.max(0.5, Math.min(1.1, tracklistFontSize))}rem`);
+  els.poster.style.setProperty("--lyrics-offset-x", `${Math.max(-80, Math.min(80, lyricsOffsetX))}px`);
+  els.poster.style.setProperty("--lyrics-offset-y", `${Math.max(-120, Math.min(120, lyricsOffsetY))}px`);
   els.poster.setAttribute("data-tracklist-style", tracklistStyle);
   els.poster.classList.toggle("tracklist-align-center", tracklistAlign === "center");
   els.poster.classList.toggle("tracklist-align-right", tracklistAlign === "right");
@@ -838,6 +850,8 @@ function resetToDefaults() {
   els.accentColor.value = DEFAULTS.accentColor;
   els.fontSelect.value = DEFAULTS.fontSelect;
   if (els.lyricsLineCount) els.lyricsLineCount.value = DEFAULTS.lyricsLineCount;
+  if (els.lyricsOffsetX) els.lyricsOffsetX.value = DEFAULTS.lyricsOffsetX;
+  if (els.lyricsOffsetY) els.lyricsOffsetY.value = DEFAULTS.lyricsOffsetY;
   if (els.tracklistCount) els.tracklistCount.value = DEFAULTS.tracklistCount;
   if (els.tracklistStyle) els.tracklistStyle.value = DEFAULTS.tracklistStyle;
   if (els.tracklistSpacing) els.tracklistSpacing.value = DEFAULTS.tracklistSpacing;
@@ -874,6 +888,7 @@ function resetToDefaults() {
   if (state.selected) {
     const isTrack = state.selected.__kind === "track";
     setLyricsPanelEnabled(isTrack);
+    setAlbumTracklistControlsVisible(!isTrack);
     const selectedArtists = (state.selected.artists || []).map((a) => a.name).join(", ") || "Unknown";
     const selectedDate = isTrack ? state.selected.album?.release_date : state.selected.release_date;
     els.posterTitle.value = state.selected.name || "";
@@ -881,6 +896,7 @@ function resetToDefaults() {
     els.releaseDate.value = formatReleaseDate(selectedDate || "--");
   } else {
     setLyricsPanelEnabled(true);
+    setAlbumTracklistControlsVisible(false);
   }
 
   syncPosterVisibility();
@@ -910,6 +926,8 @@ function getCurrentPresetPayload() {
     fontSelect: els.fontSelect.value,
     posterLayout: els.posterLayout?.value || "standard",
     lyricsLineCount: els.lyricsLineCount?.value || "3",
+    lyricsOffsetX: els.lyricsOffsetX?.value || "0",
+    lyricsOffsetY: els.lyricsOffsetY?.value || "0",
     tracklistCount: els.tracklistCount?.value || "10",
     tracklistStyle: els.tracklistStyle?.value || "numbered",
     tracklistSpacing: els.tracklistSpacing?.value || "1.15",
@@ -930,6 +948,8 @@ function applyPresetPayload(preset) {
     "fontSelect",
     "posterLayout",
     "lyricsLineCount",
+    "lyricsOffsetX",
+    "lyricsOffsetY",
     "tracklistCount",
     "tracklistStyle",
     "tracklistSpacing",
@@ -972,6 +992,8 @@ function getCurrentOrderSnapshot() {
     fontSelect: els.fontSelect.value,
     posterLayout: els.posterLayout?.value || "standard",
     lyricsLineCount: els.lyricsLineCount?.value || "3",
+    lyricsOffsetX: els.lyricsOffsetX?.value || "0",
+    lyricsOffsetY: els.lyricsOffsetY?.value || "0",
     tracklistCount: els.tracklistCount?.value || "10",
     tracklistStyle: els.tracklistStyle?.value || "numbered",
     tracklistSpacing: els.tracklistSpacing?.value || "1.15",
@@ -1024,6 +1046,12 @@ function applyOrderSnapshot(snapshot) {
   }
   if (snapshot.lyricsLineCount !== undefined && els.lyricsLineCount) {
     els.lyricsLineCount.value = String(snapshot.lyricsLineCount || "3");
+  }
+  if (snapshot.lyricsOffsetX !== undefined && els.lyricsOffsetX) {
+    els.lyricsOffsetX.value = String(snapshot.lyricsOffsetX || "0");
+  }
+  if (snapshot.lyricsOffsetY !== undefined && els.lyricsOffsetY) {
+    els.lyricsOffsetY.value = String(snapshot.lyricsOffsetY || "0");
   }
   if (snapshot.tracklistCount !== undefined && els.tracklistCount) {
     els.tracklistCount.value = String(snapshot.tracklistCount || "10");
@@ -1083,6 +1111,7 @@ function applyOrderSnapshot(snapshot) {
   state.customImageTransform = readImageTransformFromInputs();
   state.albumTracks = Array.isArray(snapshot.albumTracks) ? snapshot.albumTracks : [];
   setLyricsPanelEnabled(state.albumTracks.length === 0);
+  setAlbumTracklistControlsVisible(state.albumTracks.length > 0);
   state.codeUri = String(snapshot.codeUri || "");
   els.useCustomImage.checked = Boolean(
     snapshot.useCustomImage && (state.customImageUrl || state.customImageSourceUrl),
@@ -1280,6 +1309,8 @@ async function sharePosterToApp() {
   "accentColor",
   "fontSelect",
   "lyricsLineCount",
+  "lyricsOffsetX",
+  "lyricsOffsetY",
   "tracklistCount",
   "tracklistStyle",
   "tracklistSpacing",
@@ -1316,7 +1347,19 @@ function setLyricsPanelEnabled(enabled) {
   }
 }
 
+function setAlbumTracklistControlsVisible(visible) {
+  const show = Boolean(visible);
+  if (els.albumTracklistCard instanceof HTMLElement) {
+    els.albumTracklistCard.classList.toggle("hidden", !show);
+  }
+  if (els.toggleTracklistRow instanceof HTMLElement) {
+    els.toggleTracklistRow.classList.toggle("hidden", !show);
+  }
+}
+
 els.lyricsLineCount?.addEventListener("change", applyCustomizations);
+els.lyricsOffsetX?.addEventListener("input", applyCustomizations);
+els.lyricsOffsetY?.addEventListener("input", applyCustomizations);
 els.tracklistCount?.addEventListener("change", applyCustomizations);
 els.tracklistStyle?.addEventListener("change", applyCustomizations);
 els.tracklistAlign?.addEventListener("change", applyCustomizations);
@@ -1887,6 +1930,7 @@ els.togglePlayer.checked = DEFAULTS.togglePlayer;
 els.toggleActions.checked = DEFAULTS.toggleActions;
 if (els.toggleFadeBottom) els.toggleFadeBottom.checked = DEFAULTS.toggleFadeBottom;
 setLyricsPanelEnabled(true);
+setAlbumTracklistControlsVisible(false);
 
 updatePlayerFromProgress();
 applyCustomizations();
