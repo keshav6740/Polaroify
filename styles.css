@@ -28,6 +28,9 @@
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
+  --poster-print-ratio: 5.5 / 8.5;
+  --poster-base-width: 430px;
+  --poster-base-height: calc(var(--poster-base-width) / var(--poster-print-ratio));
 }
 
 :root[data-theme="light"] {
@@ -1014,8 +1017,9 @@ input[type="range"] {
 
 /* ─── Poster Card ─── */
 .poster {
-  width: 402px;
-  height: 663px;
+  width: var(--poster-base-width);
+  aspect-ratio: var(--poster-print-ratio);
+  height: auto;
   background: #e8e0d1;
   color: #111;
   border-radius: 0;
@@ -1653,7 +1657,7 @@ html.theme-transition .poster {
   opacity: 0.74;
 }
 
-.poster.album-selected.has-tracklist .poster-photo-wrap {
+.poster.album-selected.has-tracklist:not([data-layout="full-cover"]) .poster-photo-wrap {
   height: 300px;
 }
 
@@ -1815,9 +1819,10 @@ html.theme-transition .poster {
   }
 
   .poster {
-    transform: scale(0.5);
+    --poster-mobile-scale: 0.5;
+    transform: scale(var(--poster-mobile-scale));
     transform-origin: top center;
-    margin-bottom: -331px;
+    margin-bottom: calc(-1 * var(--poster-base-height) * (1 - var(--poster-mobile-scale)));
   }
 
   .hero h1 {
@@ -1892,9 +1897,10 @@ html.theme-transition .poster {
 
 @media (max-width: 400px) {
   .poster {
-    transform: scale(0.44);
+    --poster-mobile-scale: 0.44;
+    transform: scale(var(--poster-mobile-scale));
     transform-origin: top center;
-    margin-bottom: -370px;
+    margin-bottom: calc(-1 * var(--poster-base-height) * (1 - var(--poster-mobile-scale)));
   }
 
   .template-grid {

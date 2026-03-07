@@ -561,11 +561,15 @@ function cleanPosterTitle(input) {
   let title = String(input || "").trim();
   if (!title) return title;
 
+  // Remove common Spotify metadata wrappers/suffixes while preserving core title.
+  const metadataTokens =
+    "(deluxe|expanded|anniversary|remaster(?:ed)?|bonus|live|mono|stereo|single|version|edit|mix|acoustic|instrumental|karaoke|from|original motion picture soundtrack|motion picture soundtrack|soundtrack)";
+
   title = title
-    .replace(/\[(deluxe|expanded|anniversary|remaster|remastered|bonus|live|mono|stereo)[^\]]*\]/gi, "")
-    .replace(/\((deluxe|expanded|anniversary|remaster|remastered|bonus|live|mono|stereo)[^)]*\)/gi, "")
-    .replace(/\s+-\s+(deluxe|expanded|anniversary|remaster|remastered|bonus|live).*/gi, "")
-    .replace(/\s+(feat\.?|ft\.?)\s+.+$/gi, "")
+    .replace(/\s*[\(\[]\s*(feat\.?|ft\.?)\s+[^)\]]*[\)\]]/gi, "")
+    .replace(new RegExp(`\\s*[\\(\\[]\\s*${metadataTokens}[^\\)\\]]*[\\)\\]]`, "gi"), "")
+    .replace(new RegExp(`\\s+-\\s+${metadataTokens}.*$`, "gi"), "")
+    .replace(/\s+-\s+(feat\.?|ft\.?)\s+.*$/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 
@@ -1077,7 +1081,9 @@ function applyOrderSnapshot(snapshot) {
   state.albumTracks = Array.isArray(snapshot.albumTracks) ? snapshot.albumTracks : [];
   setLyricsPanelEnabled(state.albumTracks.length === 0);
   state.codeUri = String(snapshot.codeUri || "");
-  els.useCustomImage.checked = Boolean(snapshot.useCustomImage && state.customImageUrl);
+  els.useCustomImage.checked = Boolean(
+    snapshot.useCustomImage && (state.customImageUrl || state.customImageSourceUrl),
+  );
 
   if (snapshot.explicit === true) els.explicitBadge.classList.remove("hidden");
   if (snapshot.explicit === false) els.explicitBadge.classList.add("hidden");
@@ -1197,7 +1203,8 @@ function triggerBlobDownload(blob, fileName) {
   link.download = fileName;
   link.href = url;
   link.click();
-  URL.revokeObjectURL(url);
+  // Delay revoke for browser compatibility with download handling.
+  window.setTimeout(() => URL.revokeObjectURL(url), 5_000);
   return "download";
 }
 
@@ -1241,6 +1248,10 @@ async function sharePosterToApp() {
       return;
     }
   } catch (err) {
+    if (err && typeof err === "object" && err.name === "AbortError") {
+      setStatus("Share canceled.");
+      return;
+    }
     console.warn("Share error:", err);
     trackEvent("poster_share_failed", {});
   }

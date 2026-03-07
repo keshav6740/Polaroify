@@ -17,9 +17,15 @@
   <meta property="og:image" content="https://polaroify.vercel.app/polaroify.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Polaroify Generator" />
-  <meta name="twitter:description"
-    content="Create personalized album and song posters in minutes." />
+  <meta name="twitter:description" content="Create personalized album and song posters in minutes." />
   <meta name="twitter:image" content="https://polaroify.vercel.app/polaroify.png" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-88EQHT7DWY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag("js", new Date());
+    gtag("config", "G-88EQHT7DWY");
+  </script>
   <link rel="canonical" href="https://polaroify.vercel.app/generator.html" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <script>
@@ -103,6 +109,12 @@
           </div>
           <div class="control-row">
             <button id="changeSelectionBtn" class="btn btn-secondary hidden" type="button">Change Selection</button>
+          </div>
+          <div class="step-nav" style="display:flex; justify-content:flex-end; margin-top:1.5rem;">
+            <button id="step1Next" class="btn" type="button">Next Step <svg width="18" height="18" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" style="margin-left:6px; vertical-align:middle;">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg></button>
           </div>
         </div>
 
@@ -295,7 +307,8 @@
                 <textarea id="lyricsText"
                   placeholder="Original lyrics will load automatically for tracks..."></textarea>
               </div>
-              <p id="lyricsFitHint" class="status hidden">Tip: These lines are long. Try 4 lines for cleaner spacing.</p>
+              <p id="lyricsFitHint" class="status hidden">Tip: These lines are long. Try 4 lines for cleaner spacing.
+              </p>
               <div class="toggles">
                 <div class="toggle-item"><span>Show Lyrics</span><input id="toggleLyrics" type="checkbox" checked />
                 </div>
@@ -357,6 +370,13 @@
             </div>
           </div>
 
+          <div class="step-nav" style="display:flex; justify-content:space-between; margin-top:2rem;">
+            <button id="step2Back" class="btn btn-secondary" type="button">Back</button>
+            <button id="step2Next" class="btn" type="button">Next Step <svg width="18" height="18" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2" style="margin-left:6px; vertical-align:middle;">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg></button>
+          </div>
         </div>
 
         <div id="step3" class="wizard-step">
@@ -368,7 +388,17 @@
               <p>Download your poster as a high-quality PNG.</p>
               <div class="export-actions">
                 <button id="downloadPngBtn" class="btn" type="button">Download PNG (High Quality)</button>
+                <button id="orderHdBtn" class="btn btn-whatsapp" type="button">Order HD (No Watermark)</button>
+                <button id="downloadHdBtn" class="btn hidden" type="button">Download HD (Owner)</button>
                 <button id="resetDefaultsBtn" class="btn btn-secondary" type="button">Reset Defaults</button>
+              </div>
+              <div id="ownerLookupWrap" class="owner-lookup hidden">
+                <label for="ownerOrderId">Owner Order Lookup</label>
+                <div class="owner-lookup-row">
+                  <input id="ownerOrderId" type="text" placeholder="Enter 16-character order ID" />
+                  <button id="loadOrderBtn" class="btn btn-secondary" type="button">Load</button>
+                </div>
+                <p id="ownerStatus" class="owner-status"></p>
               </div>
             </section>
 
@@ -402,9 +432,15 @@
               </div>
             </div>
           </section>
+
+          <div class="step-nav" style="display:flex; justify-content:flex-start; margin-top:2rem;">
+            <button id="step3Back" class="btn btn-secondary" type="button">Back to Customize</button>
+          </div>
+
           <p class="export-note">Lyrics and artwork rights remain with their respective owners. Ensure your usage
             complies with applicable laws and platform terms.</p>
           <p class="export-note"><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
+
         </div>
       </article>
 
@@ -450,16 +486,6 @@
           </footer>
           <div id="posterFadeOverlay" class="poster-fade-overlay"></div>
         </div>
-        <div class="preview-step-nav" data-step-nav="1">
-          <button id="step1Next" class="btn" type="button">Next</button>
-        </div>
-        <div class="preview-step-nav" data-step-nav="2">
-          <button id="step2Back" class="btn btn-secondary" type="button">Back</button>
-          <button id="step2Next" class="btn" type="button">Next</button>
-        </div>
-        <div class="preview-step-nav" data-step-nav="3">
-          <button id="step3Back" class="btn btn-secondary" type="button">Back</button>
-        </div>
       </article>
     </section>
   </main>
@@ -470,4 +496,3 @@
 </body>
 
 </html>
-

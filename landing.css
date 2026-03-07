@@ -939,7 +939,7 @@ button {
   .hero {
     grid-template-columns: 1fr;
     text-align: center;
-    padding: 1.8rem 0 2rem;
+    padding: 2.5rem 0 2rem;
   }
 
   .hero-content {
@@ -1028,6 +1028,10 @@ button {
 }
 
 @media (max-width: 550px) {
+  .hero {
+    padding-top: 3.5rem;
+  }
+
   .hero-visual {
     transform: scale(0.78);
     min-height: 400px;
@@ -1089,6 +1093,7 @@ button {
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+
   .feature-card,
   .step-card,
   .btn-glass {

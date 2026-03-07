@@ -34,6 +34,40 @@ const ordersDbPath = path.join(dataDir, "order-snapshots.db.json");
 const analyticsDbPath = path.join(dataDir, "analytics-events.db.json");
 const APP_BASE_URL = process.env.APP_BASE_URL || "https://polaroify.vercel.app";
 
+function getClientIp(req) {
+  const forwarded = String(req.headers["x-forwarded-for"] || "");
+  const first = forwarded.split(",")[0].trim();
+  return first || String(req.socket?.remoteAddress || "unknown");
+}
+
+function createRateLimiter({ windowMs, max, keyPrefix }) {
+  const hits = new Map();
+
+  return function rateLimiter(req, res, next) {
+    const now = Date.now();
+    const key = `${keyPrefix}:${getClientIp(req)}`;
+    const entry = hits.get(key);
+
+    if (!entry || now >= entry.resetAt) {
+      hits.set(key, { count: 1, resetAt: now + windowMs });
+      return next();
+    }
+
+    if (entry.count >= max) {
+      const retryAfterSec = Math.max(1, Math.ceil((entry.resetAt - now) / 1000));
+      res.setHeader("Retry-After", String(retryAfterSec));
+      return res.status(429).json({
+        error: {
+          message: "Too many requests. Please try again shortly.",
+        },
+      });
+    }
+
+    entry.count += 1;
+    return next();
+  };
+}
+
 function ensureDataDir() {
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -90,6 +124,9 @@ app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("X-DNS-Prefetch-Control", "off");
+  res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
   const start = Date.now();
   res.on("finish", () => {
     const ms = Date.now() - start;
@@ -99,6 +136,52 @@ app.use((req, res, next) => {
     }
   });
   next();
+});
+
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    res.setHeader(
+      "Strict-Transport-Security",
+      "max-age=63072000; includeSubDomains; preload",
+    );
+    next();
+  });
+}
+
+const searchLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 45,
+  keyPrefix: "search",
+});
+const albumLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 45,
+  keyPrefix: "albums",
+});
+const lyricsLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 35,
+  keyPrefix: "lyrics",
+});
+const spotifyCodeLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 100,
+  keyPrefix: "spotify-code",
+});
+const eventsLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 120,
+  keyPrefix: "events",
+});
+const snapshotsWriteLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 20,
+  keyPrefix: "snapshots-write",
+});
+const snapshotsReadLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 60,
+  keyPrefix: "snapshots-read",
 });
 
 app.get("/api/health", (_req, res) => {
@@ -111,7 +194,7 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-app.post("/api/events", (req, res) => {
+app.post("/api/events", eventsLimiter, (req, res) => {
   try {
     const event = String(req.body?.event || "").trim().toLowerCase();
     const payload = req.body?.payload && typeof req.body.payload === "object" ? req.body.payload : {};
@@ -142,7 +225,7 @@ app.post("/api/events", (req, res) => {
   }
 });
 
-app.post("/api/order-snapshots", (req, res) => {
+app.post("/api/order-snapshots", snapshotsWriteLimiter, (req, res) => {
   try {
     const snapshot = req.body?.snapshot;
     const requestedId = String(req.body?.id || "").trim().toLowerCase();
@@ -175,9 +258,9 @@ app.post("/api/order-snapshots", (req, res) => {
   }
 });
 
-app.get("/api/order-snapshots/:id", (req, res) => {
+app.get("/api/order-snapshots/:id", snapshotsReadLimiter, (req, res) => {
   try {
-    const id = String(req.params.id || "").trim();
+    const id = String(req.params.id || "").trim().toLowerCase();
     if (!/^[a-f0-9]{16}$/i.test(id)) {
       return res.status(400).json({ error: { message: "Invalid snapshot id." } });
     }
@@ -259,7 +342,7 @@ async function getAccessToken() {
   return cachedToken;
 }
 
-app.get("/api/search", async (req, res) => {
+app.get("/api/search", searchLimiter, async (req, res) => {
   try {
     const q = String(req.query.q || "").trim();
     const type = String(req.query.type || "track");
@@ -317,7 +400,7 @@ app.get("/api/search", async (req, res) => {
   }
 });
 
-app.get("/api/albums/:id/tracks", async (req, res) => {
+app.get("/api/albums/:id/tracks", albumLimiter, async (req, res) => {
   try {
     const albumId = String(req.params.id || "").trim();
     if (!albumId) {
@@ -392,7 +475,7 @@ app.get("/api/albums/:id/tracks", async (req, res) => {
   }
 });
 
-app.get("/api/lyrics", async (req, res) => {
+app.get("/api/lyrics", lyricsLimiter, async (req, res) => {
   try {
     const track = String(req.query.track || "").trim();
     const artist = String(req.query.artist || "").trim();
@@ -420,7 +503,7 @@ app.get("/api/lyrics", async (req, res) => {
   }
 });
 
-app.get("/api/spotify-code", async (req, res) => {
+app.get("/api/spotify-code", spotifyCodeLimiter, async (req, res) => {
   try {
     const uri = String(req.query.uri || "").trim();
     const bg = normalizeHexColor(String(req.query.bg || "FFFFFF"));
