@@ -304,8 +304,9 @@ async function selectItem(item) {
   els.explicitBadge.classList.toggle("hidden", !isExplicit);
   els.posterTitle.value = title;
   els.posterArtist.value = artists;
-  els.releaseDate.value = date || "--";
-  els.releaseDatePreview.textContent = formatReleaseDate(date || "--");
+  const formattedDate = formatReleaseDate(date || "--");
+  els.releaseDate.value = formattedDate;
+  els.releaseDatePreview.textContent = formattedDate;
 
   if (isTrack && Number.isFinite(item.duration_ms)) {
     const seconds = Math.max(1, Math.round(item.duration_ms / 1000));
@@ -877,7 +878,7 @@ function resetToDefaults() {
     const selectedDate = isTrack ? state.selected.album?.release_date : state.selected.release_date;
     els.posterTitle.value = state.selected.name || "";
     els.posterArtist.value = selectedArtists;
-    els.releaseDate.value = selectedDate || "--";
+    els.releaseDate.value = formatReleaseDate(selectedDate || "--");
   } else {
     setLyricsPanelEnabled(true);
   }
@@ -1007,7 +1008,9 @@ function applyOrderSnapshot(snapshot) {
 
   if (snapshot.title !== undefined) els.posterTitle.value = String(snapshot.title || "");
   if (snapshot.artist !== undefined) els.posterArtist.value = String(snapshot.artist || "");
-  if (snapshot.releaseDate !== undefined) els.releaseDate.value = String(snapshot.releaseDate || "--");
+  if (snapshot.releaseDate !== undefined) {
+    els.releaseDate.value = formatReleaseDate(String(snapshot.releaseDate || "--"));
+  }
   if (snapshot.lyricsText !== undefined) els.lyricsText.value = String(snapshot.lyricsText || "");
 
   if (snapshot.playerDuration !== undefined) els.playerDuration.value = String(snapshot.playerDuration || "30");
