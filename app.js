@@ -1650,17 +1650,16 @@ function formatTime(seconds) {
 function formatReleaseDate(input) {
   const raw = String(input || "").trim();
   if (!raw || raw === "--") return "--";
-  const toYyy = (year) => String(year).slice(-3).padStart(3, "0");
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
     const [y, m, d] = raw.split("-");
-    return `${d}-${m}-${toYyy(y)}`;
+    return `${d}-${m}-${y}`;
   }
   if (/^\d{4}-\d{2}$/.test(raw)) {
     const [y, m] = raw.split("-");
-    return `01-${m}-${toYyy(y)}`;
+    return `01-${m}-${y}`;
   }
   if (/^\d{4}$/.test(raw)) {
-    return `01-01-${toYyy(raw)}`;
+    return `01-01-${raw}`;
   }
   return raw;
 }
