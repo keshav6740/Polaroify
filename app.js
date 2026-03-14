@@ -138,7 +138,7 @@ const SUPPORTS_DOWNLOAD_ATTR =
   "download" in HTMLAnchorElement.prototype;
 const DEFAULTS = {
   playerDuration: "30",
-  playerProgress: "0",
+  playerProgress: "45",
   codeOpacity: "80",
   polaroidColor: "#f5f0e6",
   accentColor: "#0d0d0d",
