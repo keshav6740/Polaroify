@@ -551,6 +551,16 @@ textarea {
   transform: translateY(0);
 }
 
+.btn:disabled,
+.btn[disabled] {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none;
+  filter: none;
+  pointer-events: none;
+}
+
 .btn-secondary {
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -1041,6 +1051,7 @@ input[type="range"] {
   --fade-bottom-color: rgba(232, 224, 209, 0.95);
   --lyrics-offset-x: 0px;
   --lyrics-offset-y: 0px;
+  --poster-font-scale: 1;
 }
 
 :root[data-theme="light"] .poster {
@@ -1096,7 +1107,7 @@ html.theme-transition .poster {
 
 .poster-main h3 {
   margin: 0;
-  font-size: 1.08rem;
+  font-size: calc(1.08rem * var(--poster-font-scale));
   line-height: 1.08;
   text-transform: uppercase;
   font-weight: 800;
@@ -1124,7 +1135,7 @@ html.theme-transition .poster {
   opacity: 0.66;
   font-weight: 520;
   line-height: 1.2;
-  font-size: 0.82rem;
+  font-size: calc(0.82rem * var(--poster-font-scale));
   display: -webkit-box;
   -webkit-line-clamp: 1;
   line-clamp: 1;
@@ -1435,6 +1446,10 @@ html.theme-transition .poster {
   font-weight: 700;
   opacity: 0.6;
   margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60%;
 }
 
 .poster-fade-overlay {
@@ -1911,3 +1926,14 @@ html.theme-transition .poster {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ── Twemoji flag / emoji images ── */
+.poster-twemoji {
+  display: inline-block;
+  height: 1em;
+  width: 1em;
+  vertical-align: -0.12em;
+  object-fit: contain;
+  pointer-events: none;
+}
+

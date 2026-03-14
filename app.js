@@ -71,6 +71,12 @@ const els = {
   resetImageAdjustmentsBtn: document.getElementById("resetImageAdjustmentsBtn"),
   imageFit: document.getElementById("imageFit"),
   fontSelect: document.getElementById("fontSelect"),
+  posterFontScale: document.getElementById("posterFontScale"),
+  posterFontScaleLabel: document.getElementById("posterFontScaleLabel"),
+  lyricsFontScale: document.getElementById("lyricsFontScale"),
+  lyricsFontScaleLabel: document.getElementById("lyricsFontScaleLabel"),
+  releaseDateFontScale: document.getElementById("releaseDateFontScale"),
+  releaseDateFontScaleLabel: document.getElementById("releaseDateFontScaleLabel"),
   contrastWarning: document.getElementById("contrastWarning"),
   toggleLyrics: document.getElementById("toggleLyrics"),
   toggleTracklist: document.getElementById("toggleTracklist"),
@@ -137,6 +143,9 @@ const DEFAULTS = {
   polaroidColor: "#f5f0e6",
   accentColor: "#0d0d0d",
   fontSelect: "'Space Grotesk', sans-serif",
+  posterFontScale: "1",
+  lyricsFontScale: "1",
+  releaseDateFontScale: "1",
   posterLayout: "standard",
   lyricsLineCount: "3",
   lyricsOffsetX: "0",
@@ -514,6 +523,7 @@ function applyCustomizations() {
   const bg = els.polaroidColor.value;
   const accent = els.accentColor.value;
   const font = els.fontSelect.value;
+  const fontScale = Number.parseFloat(els.posterFontScale?.value || "1");
   const codeOpacity = Number(els.codeOpacity.value || 55) / 100;
   const useCustom = Boolean(els.useCustomImage.checked && state.customImageUrl);
   const fitMode = els.imageFit?.value || "cover";
@@ -521,11 +531,24 @@ function applyCustomizations() {
   const displayTitle = els.toggleAutoCleanTitle?.checked ? cleanPosterTitle(title) : title;
   if (displayTitle) els.previewTitle.textContent = formatPosterTitle(displayTitle);
   if (artist) els.previewArtist.textContent = artist;
+
+  // Apply font scale as inline styles so they win over layout-specific CSS selectors
+  const clampedScale = Math.max(0.65, Math.min(1.5, fontScale));
+  els.previewTitle.style.fontSize = `calc(1.08rem * ${clampedScale})`;
+  const artistP = els.previewArtist?.closest("p");
+  if (artistP) artistP.style.fontSize = `calc(0.82rem * ${clampedScale})`;
+
   applyTitleMetrics(displayTitle);
   els.releaseDatePreview.textContent = formatReleaseDate(date || "--");
   const previewLyrics = formatLyricsPreview(lyrics, lyricsLineCount);
   els.previewLyrics.textContent = previewLyrics;
   els.previewLyrics.title = lyrics || "";
+  // Apply lyrics font scale
+  const lyricsScale = Math.max(0.5, Math.min(1.8, Number.parseFloat(els.lyricsFontScale?.value || "1")));
+  els.previewLyrics.style.fontSize = `calc(0.8rem * ${lyricsScale})`;
+  // Apply release date font scale
+  const dateScale = Math.max(0.6, Math.min(1.8, Number.parseFloat(els.releaseDateFontScale?.value || "1")));
+  els.releaseDatePreview.style.fontSize = `calc(0.62rem * ${dateScale})`;
   updateLyricsFitHint(lyrics, lyricsLineCount);
   renderTracklistPreview();
   els.coverArt.src = useCustom ? state.customImageUrl : state.spotifyCoverUrl;
@@ -535,6 +558,7 @@ function applyCustomizations() {
   els.poster.style.background = bg;
   els.poster.style.color = accent;
   els.poster.style.fontFamily = font;
+  els.poster.style.setProperty("--poster-font-scale", String(Math.max(0.65, Math.min(1.5, fontScale))));
   els.poster.setAttribute("data-layout", posterLayout);
   els.poster.classList.toggle("album-selected", state.selected?.__kind === "album");
   els.poster.classList.toggle("runtime-hidden", !Boolean(els.toggleRuntime?.checked));
@@ -562,6 +586,32 @@ function applyCustomizations() {
   syncRuntimeToggleState();
   syncPosterVisibility();
   updateSpotifyCode();
+  // Run after a microtask so DOM is settled (important for font-scale inline styles)
+  Promise.resolve().then(applyTwemoji);
+}
+
+// Twemoji: replace flag/emoji characters with CDN images so Windows renders them correctly
+function applyTwemoji() {
+  if (typeof window.twemoji === "undefined") return;
+  const TWEMOJI_OPTS = {
+    base: "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/",
+    className: "poster-twemoji",
+    // Only parse the poster text nodes, not the whole page
+    folder: "svg",
+    ext: ".svg",
+    attributes: () => ({
+      crossorigin: "anonymous"
+    })
+  };
+  const targets = [
+    els.previewTitle,
+    els.previewArtist?.closest("p"),
+    els.previewLyrics,
+    els.releaseDatePreview,
+  ];
+  targets.forEach((el) => {
+    if (el) window.twemoji.parse(el, TWEMOJI_OPTS);
+  });
 }
 
 function formatPosterTitle(title) {
@@ -837,6 +887,10 @@ function goToStep(step) {
     const width = step === 1 ? 33 : step === 2 ? 66 : 100;
     els.wizardProgressFill.style.width = `${width}%`;
   }
+  // On mobile the panel doesn't scroll automatically — bring the top into view
+  if (window.innerWidth < 950) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 function resetToDefaults() {
@@ -849,6 +903,18 @@ function resetToDefaults() {
   els.polaroidColor.value = DEFAULTS.polaroidColor;
   els.accentColor.value = DEFAULTS.accentColor;
   els.fontSelect.value = DEFAULTS.fontSelect;
+  if (els.posterFontScale) {
+    els.posterFontScale.value = DEFAULTS.posterFontScale;
+    if (els.posterFontScaleLabel) els.posterFontScaleLabel.textContent = "100%";
+  }
+  if (els.lyricsFontScale) {
+    els.lyricsFontScale.value = DEFAULTS.lyricsFontScale;
+    if (els.lyricsFontScaleLabel) els.lyricsFontScaleLabel.textContent = "100%";
+  }
+  if (els.releaseDateFontScale) {
+    els.releaseDateFontScale.value = DEFAULTS.releaseDateFontScale;
+    if (els.releaseDateFontScaleLabel) els.releaseDateFontScaleLabel.textContent = "100%";
+  }
   if (els.lyricsLineCount) els.lyricsLineCount.value = DEFAULTS.lyricsLineCount;
   if (els.lyricsOffsetX) els.lyricsOffsetX.value = DEFAULTS.lyricsOffsetX;
   if (els.lyricsOffsetY) els.lyricsOffsetY.value = DEFAULTS.lyricsOffsetY;
@@ -946,6 +1012,7 @@ function applyPresetPayload(preset) {
     "polaroidColor",
     "accentColor",
     "fontSelect",
+    "posterFontScale",
     "posterLayout",
     "lyricsLineCount",
     "lyricsOffsetX",
@@ -990,6 +1057,7 @@ function getCurrentOrderSnapshot() {
     polaroidColor: els.polaroidColor.value,
     accentColor: els.accentColor.value,
     fontSelect: els.fontSelect.value,
+    posterFontScale: els.posterFontScale?.value || "1",
     posterLayout: els.posterLayout?.value || "standard",
     lyricsLineCount: els.lyricsLineCount?.value || "3",
     lyricsOffsetX: els.lyricsOffsetX?.value || "0",
@@ -1041,6 +1109,12 @@ function applyOrderSnapshot(snapshot) {
   if (snapshot.polaroidColor !== undefined) els.polaroidColor.value = String(snapshot.polaroidColor || "#f5f0e6");
   if (snapshot.accentColor !== undefined) els.accentColor.value = String(snapshot.accentColor || "#0d0d0d");
   if (snapshot.fontSelect !== undefined) els.fontSelect.value = String(snapshot.fontSelect || DEFAULTS.fontSelect);
+  if (snapshot.posterFontScale !== undefined && els.posterFontScale) {
+    els.posterFontScale.value = String(snapshot.posterFontScale || "1");
+    if (els.posterFontScaleLabel) {
+      els.posterFontScaleLabel.textContent = `${Math.round(Number(els.posterFontScale.value) * 100)}%`;
+    }
+  }
   if (snapshot.posterLayout !== undefined && els.posterLayout) {
     els.posterLayout.value = String(snapshot.posterLayout || "standard");
   }
@@ -1357,15 +1431,32 @@ function setAlbumTracklistControlsVisible(visible) {
   }
 }
 
+// Note: lyricsOffsetX, lyricsOffsetY, tracklistSpacing, tracklistFontSize are already
+// registered via the forEach 'input' block above — no duplicate 'change' listener needed.
 els.lyricsLineCount?.addEventListener("change", applyCustomizations);
-els.lyricsOffsetX?.addEventListener("input", applyCustomizations);
-els.lyricsOffsetY?.addEventListener("input", applyCustomizations);
 els.tracklistCount?.addEventListener("change", applyCustomizations);
 els.tracklistStyle?.addEventListener("change", applyCustomizations);
 els.tracklistAlign?.addEventListener("change", applyCustomizations);
-els.tracklistSpacing?.addEventListener("change", applyCustomizations);
-els.tracklistFontSize?.addEventListener("change", applyCustomizations);
 els.posterLayout?.addEventListener("change", applyCustomizations);
+els.fontSelect?.addEventListener("change", applyCustomizations);
+els.posterFontScale?.addEventListener("input", () => {
+  if (els.posterFontScaleLabel) {
+    els.posterFontScaleLabel.textContent = `${Math.round(Number(els.posterFontScale.value) * 100)}%`;
+  }
+  applyCustomizations();
+});
+els.lyricsFontScale?.addEventListener("input", () => {
+  if (els.lyricsFontScaleLabel) {
+    els.lyricsFontScaleLabel.textContent = `${Math.round(Number(els.lyricsFontScale.value) * 100)}%`;
+  }
+  applyCustomizations();
+});
+els.releaseDateFontScale?.addEventListener("input", () => {
+  if (els.releaseDateFontScaleLabel) {
+    els.releaseDateFontScaleLabel.textContent = `${Math.round(Number(els.releaseDateFontScale.value) * 100)}%`;
+  }
+  applyCustomizations();
+});
 
 els.useCustomImage.addEventListener("change", applyCustomizations);
 if (els.imageFit) els.imageFit.addEventListener("change", applyCustomizations);
@@ -1409,12 +1500,10 @@ els.colorTemplates.addEventListener("click", (event) => {
   if (!btn) return;
   const bg = btn.getAttribute("data-bg");
   const accent = btn.getAttribute("data-accent");
-  const font = btn.getAttribute("data-font");
   if (!bg || !accent) return;
   setThemeMode("template");
   els.polaroidColor.value = bg;
   els.accentColor.value = accent;
-  if (font) els.fontSelect.value = font;
   syncPosterVisibility();
   applyCustomizations();
 });
@@ -1719,6 +1808,9 @@ function slugify(value) {
 
 function setStatus(message) {
   if (els.statusText) els.statusText.textContent = message;
+}
+
+function setOwnerStatus(message) {
   if (els.ownerStatus) els.ownerStatus.textContent = message;
 }
 
@@ -1764,11 +1856,23 @@ function getOrCreateSessionId() {
 }
 
 async function canvasToPngBlob(canvas) {
-  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
-  if (blob) return blob;
-  const dataUrl = canvas.toDataURL("image/png");
-  const resp = await fetch(dataUrl);
-  return resp.blob();
+  try {
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png", 1.0));
+    if (blob && blob.size > 10) return blob;
+  } catch (e) {
+    // toBlob failed, fall through to toDataURL
+  }
+  
+  const dataUrl = canvas.toDataURL("image/png", 1.0);
+  const arr = dataUrl.split(",");
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
 }
 
 function escapeHtml(value) {
@@ -1892,12 +1996,14 @@ async function loadOrderSnapshotFromUrl() {
 async function loadOrderSnapshotById(orderId) {
   const cleanId = normalizeOrderId(orderId);
   if (!/^[a-f0-9]{16}$/.test(cleanId)) {
+    setOwnerStatus("Invalid order ID. Use the 16-character code from WhatsApp.");
     setStatus("Invalid order ID. Use the 16-character code from WhatsApp.");
     return false;
   }
 
   try {
     setStatus("Loading saved order customization...");
+    setOwnerStatus("Loading saved order customization...");
     const response = await fetch(`/api/order-snapshots/${encodeURIComponent(cleanId)}`, {
       headers: { Accept: "application/json" },
     });
@@ -1908,9 +2014,11 @@ async function loadOrderSnapshotById(orderId) {
     applyOrderSnapshot(data.snapshot);
     goToStep(3);
     setStatus("Saved customization loaded. Ready for HD export.");
+    setOwnerStatus("Saved customization loaded. Ready for HD export.");
     return true;
   } catch (error) {
     console.warn("Could not load order snapshot:", error);
+    setOwnerStatus("Could not load this Order ID.");
     setStatus("Could not load this Order ID.");
     return false;
   }
@@ -1918,7 +2026,7 @@ async function loadOrderSnapshotById(orderId) {
 
 async function loadOrderByOwnerInput() {
   if (!isOwnerModeFromUrl()) {
-    setStatus("Owner mode required.");
+    setOwnerStatus("Owner mode required.");
     return;
   }
   await loadOrderSnapshotById(els.ownerOrderId?.value || "");
