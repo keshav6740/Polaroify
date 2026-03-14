@@ -312,7 +312,7 @@ async function selectItem(item) {
   state.codeUri = uri;
   state.spotifyCoverUrl = cover || "";
   state.albumTracks = [];
-  els.playerProgress.value = "0";
+  els.playerProgress.value = DEFAULTS.playerProgress;
   els.coverArt.src = state.spotifyCoverUrl;
   els.previewTitle.textContent = formatPosterTitle(title);
   els.previewArtist.textContent = artists;
