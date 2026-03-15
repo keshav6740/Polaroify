@@ -296,6 +296,22 @@
       <p class="footer-note">Free to use · No sign-up required</p>
       <p class="footer-note"><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
     </footer>
+
+    <!-- ─── Password Modal ─── -->
+    <div class="pwd-modal-overlay" id="pwdOverlay">
+      <div class="pwd-modal-content">
+        <button class="pwd-close" id="pwdClose" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <h3>Protected Area</h3>
+        <p>Please enter the secret password to access the A3 Sheet printing studio.</p>
+        <div class="pwd-input-group">
+          <input type="password" id="pwdInput" class="pwd-input" placeholder="Enter password..." />
+          <button id="pwdSubmit" class="pwd-btn">Unlock</button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="./theme.js"></script>
     <script>
       (function () {
@@ -401,14 +417,44 @@
         });
 
         const openA3Btn = document.getElementById('openA3Btn');
-        if (openA3Btn) {
+        const pwdOverlay = document.getElementById('pwdOverlay');
+        const pwdInput = document.getElementById('pwdInput');
+        const pwdSubmit = document.getElementById('pwdSubmit');
+        const pwdClose = document.getElementById('pwdClose');
+
+        if (openA3Btn && pwdOverlay) {
           openA3Btn.addEventListener('click', () => {
-             const guess = prompt("Enter password to access A3 Sheets:");
-             if (guess === "Avnish@Polaroid") {
-                 window.location.href = "/a3.html";
-             } else if (guess !== null) {
-                 alert("Incorrect password.");
-             }
+             pwdOverlay.classList.add('active');
+             pwdInput.value = '';
+             setTimeout(() => pwdInput.focus(), 100);
+          });
+
+          const checkPassword = () => {
+            if (pwdInput.value === 'Avnish@Polaroid') {
+              window.location.href = '/a3.html';
+            } else {
+              pwdInput.style.borderColor = '#ff4444';
+              pwdInput.style.color = '#ff4444';
+              setTimeout(() => {
+                pwdInput.style.borderColor = '';
+                pwdInput.style.color = '';
+              }, 800);
+            }
+          };
+
+          pwdSubmit.addEventListener('click', checkPassword);
+          pwdInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') checkPassword();
+          });
+
+          pwdClose.addEventListener('click', () => {
+            pwdOverlay.classList.remove('active');
+          });
+
+          pwdOverlay.addEventListener('click', (e) => {
+            if (e.target === pwdOverlay) {
+              pwdOverlay.classList.remove('active');
+            }
           });
         }
       })();
@@ -416,6 +462,3 @@
 </body>
 
 </html>
-
-
-

@@ -880,48 +880,44 @@ button {
 
 /* ─── CTA Footer ─── */
 .cta-footer {
-  text-align: center;
-  padding: 5rem 1rem 3rem;
   position: relative;
+  text-align: center;
+  padding: 5rem 0 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .cta-glow {
   position: absolute;
+  top: 50%;
   left: 50%;
-  top: 30%;
-  transform: translateX(-50%);
-  width: 500px;
-  height: 300px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 107, 43, 0.15) 0%, transparent 65%);
-  filter: blur(80px);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
   pointer-events: none;
+  filter: blur(40px);
 }
 
 .cta-footer h2 {
   font-family: 'Abril Fatface', serif;
-  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  font-size: clamp(2.2rem, 4.5vw, 3.5rem);
   line-height: 1.1;
-  margin-bottom: 1rem;
   position: relative;
 }
 
-.cta-footer>p {
+.cta-footer p {
+  font-size: 1.1rem;
   color: var(--muted);
-  font-size: 1.05rem;
-  margin-bottom: 1.8rem;
-  position: relative;
-}
-
-.cta-footer .btn-primary {
-  position: relative;
+  max-width: 460px;
 }
 
 .footer-note {
-  margin-top: 1.2rem !important;
-  font-size: 0.78rem !important;
-  color: var(--muted) !important;
+  font-size: 0.75rem !important;
   opacity: 0.6;
+  margin-top: 1rem;
 }
 
 .footer-note a {
