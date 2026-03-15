@@ -207,7 +207,7 @@ async function renderGrid(sheetId) {
             }
             
             slotEl.innerHTML = `
-                <div class="slot-actions" style="opacity: 1; background: transparent; pointer-events: auto;">
+                <div class="slot-actions">
                     ${actionsHtml}
                 </div>
                 <input type="file" class="hidden-upload" accept="image/png, image/jpeg, image/jpg" style="display:none;" />

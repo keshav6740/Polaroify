@@ -1161,3 +1161,115 @@ html.theme-transition .chip {
     box-shadow 260ms ease,
     opacity 260ms ease;
 }
+
+/* ─── Password Modal ─── */
+.pwd-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.pwd-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pwd-modal-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  transform: translateY(20px) scale(0.95);
+  transition: transform 0.3s ease;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme="light"] .pwd-modal-content {
+  background: var(--surface-2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+}
+
+.pwd-modal-overlay.active .pwd-modal-content {
+  transform: translateY(0) scale(1);
+}
+
+.pwd-modal-content h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.pwd-modal-content p {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.pwd-input-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.pwd-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+:root[data-theme="light"] .pwd-input {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.pwd-input:focus {
+  border-color: var(--accent);
+}
+
+.pwd-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0 1.2rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.pwd-btn:hover {
+  transform: translateY(-2px);
+  background: var(--accent-2);
+}
+
+.pwd-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s;
+}
+
+.pwd-close:hover {
+  color: var(--ink);
+}

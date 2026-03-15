@@ -303,7 +303,7 @@ body {
   transition: opacity 0.2s;
 }
 
-.grid-slot:not(.empty):hover .slot-actions {
+.grid-slot:hover .slot-actions {
   opacity: 1;
 }
 
