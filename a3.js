@@ -183,12 +183,14 @@ async function renderGrid(sheetId) {
                 renderGrid(sheetId); // Re-render to show paste buttons
             });
 
-            slotEl.querySelector('.btn-delete-slot').addEventListener('click', async (e) => {
+            slotEl.querySelector('.btn-delete-slot').addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (confirm('Remove this polaroid from the sheet?')) {
-                    await db.deleteSlot(sheetId, i);
-                    renderGrid(sheetId);
-                }
+                setTimeout(async () => {
+                    if (confirm('Remove this polaroid from the sheet?')) {
+                        await db.deleteSlot(sheetId, i);
+                        renderGrid(sheetId);
+                    }
+                }, 10);
             });
         } else {
             slotEl.classList.add('empty');
@@ -289,7 +291,10 @@ els.btnNewSheet.addEventListener('click', () => openModal('Create New Sheet'));
 els.btnCancelModal.addEventListener('click', closeModal);
 els.btnBackToDashboard.addEventListener('click', () => {
     window.history.replaceState({}, document.title, window.location.pathname);
-    loadDashboard();
+    els.sheetView.classList.add('hidden');
+    setTimeout(() => {
+        loadDashboard();
+    }, 10);
 });
 els.btnPrintSheet.addEventListener('click', () => {
     window.print();
