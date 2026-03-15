@@ -192,61 +192,66 @@ async function renderGrid(sheetId) {
             });
         } else {
             slotEl.classList.add('empty');
-            let actionsHtml = '';
+            
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'slot-actions';
             
             if (hasCopied) {
-                actionsHtml = `
-                    <button class="btn-paste-slot">Paste Here</button>
-                    <button class="btn-upload-slot" style="margin-top: 8px;">Upload Image</button>
-                    <button class="btn-edit-slot" style="margin-top: 8px;">Create New</button>
-                `;
-            } else {
-                actionsHtml = `
-                    <button class="btn-upload-slot" style="margin-bottom: 8px;">Upload Image</button>
-                    <button class="btn-edit-slot">Create New</button>
-                `;
-            }
-            
-            slotEl.innerHTML = `
-                <div class="slot-actions">
-                    ${actionsHtml}
-                </div>
-                <input type="file" class="hidden-upload" accept="image/png, image/jpeg, image/jpg" style="display:none;" />
-            `;
-            
-            const fileInput = slotEl.querySelector('.hidden-upload');
-
-            if (hasCopied) {
-                slotEl.querySelector('.btn-paste-slot').addEventListener('click', async (e) => {
+                const pasteBtn = document.createElement('button');
+                pasteBtn.className = 'btn-paste-slot';
+                pasteBtn.textContent = 'Paste Here';
+                pasteBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
                     const copiedData = JSON.parse(localStorage.getItem(COPY_STORAGE_KEY));
                     await db.saveSlot(sheetId, i, copiedData.dataUrl, copiedData.snapshot);
                     renderGrid(sheetId);
                 });
+                actionsDiv.appendChild(pasteBtn);
             }
-
-            slotEl.querySelector('.btn-edit-slot').addEventListener('click', (e) => {
+            
+            const uploadBtn = document.createElement('button');
+            uploadBtn.className = 'btn-upload-slot';
+            uploadBtn.style.marginTop = hasCopied ? '8px' : '0';
+            uploadBtn.style.marginBottom = hasCopied ? '0' : '8px';
+            uploadBtn.textContent = 'Upload Image';
+            
+            const createBtn = document.createElement('button');
+            createBtn.className = 'btn-edit-slot';
+            createBtn.style.marginTop = hasCopied ? '8px' : '0';
+            createBtn.textContent = 'Create New';
+            createBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 goToGenerator(sheetId, i);
             });
             
-            slotEl.querySelector('.btn-upload-slot').addEventListener('click', (e) => {
+            actionsDiv.appendChild(uploadBtn);
+            actionsDiv.appendChild(createBtn);
+            
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.className = 'hidden-upload';
+            fileInput.accept = 'image/png, image/jpeg, image/jpg';
+            fileInput.style.display = 'none';
+            
+            uploadBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 fileInput.click();
             });
-
+            
             fileInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = async (event) => {
-                        // User uploaded image directly. No 'snapshot' associated.
                         await db.saveSlot(sheetId, i, event.target.result, null);
                         renderGrid(sheetId);
                     };
                     reader.readAsDataURL(file);
                 }
             });
+            
+            slotEl.appendChild(actionsDiv);
+            slotEl.appendChild(fileInput);
         }
         
         cellEl.appendChild(slotEl);
