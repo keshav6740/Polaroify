@@ -410,6 +410,15 @@
             <section class="export-card export-card-primary">
               <h3>Export Options</h3>
               <p>Download your poster as a high-quality PNG.</p>
+              
+              <div id="a3ActionTarget" class="export-actions hidden" style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <button id="saveToA3Btn" class="btn" type="button" style="background:#1db954; color:white; width: 100%;">
+                   Save to A3 Sheet (Slot <span id="a3SlotNum"></span>)
+                </button>
+                <p id="a3SavingStatus" class="status"></p>
+                <a id="cancelA3Link" href="/a3.html" class="btn btn-secondary" style="width: 100%; text-align: center; text-decoration: none; box-sizing: border-box;">Cancel & Return to Sheet</a>
+              </div>
+
               <div class="export-actions">
                 <button id="downloadPngBtn" class="btn" type="button">Download PNG (High Quality)</button>
                 <button id="orderHdBtn" class="btn btn-whatsapp" type="button">Order HD (No Watermark)</button>
@@ -517,6 +526,11 @@
   <script type="module" src="./theme.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
   <script type="module" src="./app.js"></script>
+  <!-- Expose DB to Window to allow app.js to use it simply -->
+  <script type="module">
+    import { db } from './db.js';
+    window.a3db = db;
+  </script>
 </body>
 
 </html>

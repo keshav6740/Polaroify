@@ -98,6 +98,13 @@ const els = {
   timeLabel: document.getElementById("timeLabel"),
   btnPlayPause: document.getElementById("btnPlayPause"),
   btnLiked: document.getElementById("btnLiked"),
+  
+  // A3 Integration
+  a3ActionTarget: document.getElementById("a3ActionTarget"),
+  saveToA3Btn: document.getElementById("saveToA3Btn"),
+  cancelA3Link: document.getElementById("cancelA3Link"),
+  a3SlotNum: document.getElementById("a3SlotNum"),
+  a3SavingStatus: document.getElementById("a3SavingStatus"),
 };
 
 const state = {
@@ -122,6 +129,10 @@ const state = {
   albumTracks: [],
   currentStep: 1,
   themeMode: "template",
+  
+  // A3 Integration state
+  a3TargetSheetId: null,
+  a3TargetSlotIndex: null,
 };
 
 const PRESET_STORAGE_KEY = "spotpost_presets_v1";
@@ -200,6 +211,9 @@ els.copyLinkBtn.addEventListener("click", copyShareLink);
 els.shareSocialBtn.addEventListener("click", shareSocial);
 els.themeModeTemplate.addEventListener("click", () => setThemeMode("template"));
 els.themeModeCustom.addEventListener("click", () => setThemeMode("custom"));
+
+// A3 Integration Listeners
+els.saveToA3Btn?.addEventListener("click", savePolaroidToA3Slot);
 
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -1671,6 +1685,48 @@ async function downloadOwnerHdPng() {
   }
 }
 
+async function savePolaroidToA3Slot() {
+  if (state.a3TargetSheetId === null || state.a3TargetSlotIndex === null) return;
+  
+  const statusEl = els.a3SavingStatus;
+  if (statusEl) {
+    statusEl.textContent = "Generating high-quality image... Please wait.";
+  }
+  
+  try {
+    const blob = await renderPosterBlob({ scale: FREE_EXPORT_SCALE });
+    if (!blob) throw new Error("PNG export failed");
+    
+    // Convert blob to data URL for storage
+    const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+
+    const snapshot = getCurrentOrderSnapshot();
+    const { db: a3db } = await import('./db.js');
+
+    if (a3db) {
+        await a3db.saveSlot(state.a3TargetSheetId, state.a3TargetSlotIndex, dataUrl, snapshot);
+        if (statusEl) {
+            statusEl.textContent = "Saved successfully! Redirecting...";
+        }
+        setTimeout(() => {
+            window.location.href = `/a3.html?sheetId=${state.a3TargetSheetId}`;
+        }, 1000);
+    } else {
+        throw new Error("Database not loaded");
+    }
+  } catch (err) {
+    console.error(err);
+    if (statusEl) {
+        statusEl.textContent = "Failed to save poster to sheet. Try again.";
+    }
+  }
+}
+
 async function renderPosterBlob(options = {}) {
   const scale = Number(options.scale) > 0 ? Number(options.scale) : 2;
   const watermarkText = String(options.watermarkText || "").trim();
@@ -2053,5 +2109,41 @@ if (isOwnerModeFromUrl()) {
   els.ownerLookupWrap?.classList.remove("hidden");
   goToStep(3);
 }
+
+// A3 Integration Initialization
+function initA3Integration() {
+  const params = new URLSearchParams(window.location.search);
+  const sheetId = params.get('sheetId');
+  const slot = params.get('slot');
+  const isEdit = params.get('edit') === '1';
+  
+  if (sheetId && slot) {
+      state.a3TargetSheetId = Number(sheetId);
+      state.a3TargetSlotIndex = Number(slot);
+      
+      if (els.a3ActionTarget) {
+          els.a3ActionTarget.classList.remove('hidden');
+      }
+      if (els.a3SlotNum) {
+          els.a3SlotNum.textContent = String(state.a3TargetSlotIndex + 1);
+      }
+      if (els.cancelA3Link) {
+          els.cancelA3Link.href = `/a3.html?sheetId=${state.a3TargetSheetId}`;
+      }
+
+      if (isEdit) {
+          import('./db.js').then(async ({ db: a3db }) => {
+              const slotData = await a3db.getSlot(state.a3TargetSheetId, state.a3TargetSlotIndex);
+              if (slotData && slotData.snapshot) {
+                  applyOrderSnapshot(slotData.snapshot);
+                  goToStep(3);
+                  setStatus("Editing existing A3 polaroid...");
+              }
+          }).catch(console.error);
+      }
+  }
+}
+
+initA3Integration();
 trackEvent("generator_loaded", { ownerMode: isOwnerModeFromUrl() });
 loadOrderSnapshotFromUrl();

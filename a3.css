@@ -1,0 +1,400 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #050507;
+  color: #fff;
+}
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1db954, #128c3a);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-danger {
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff4444;
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover {
+  background: rgba(255, 68, 68, 0.2);
+}
+
+.sheets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.sheet-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+
+.sheet-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.sheet-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sheet-meta {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.sheet-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content {
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 400px;
+  transform: scale(0.95);
+  transition: transform 0.2s;
+}
+
+.modal-overlay.active .modal-content {
+  transform: scale(1);
+}
+
+.modal-content h2 {
+  margin: 0 0 20px 0;
+}
+
+.input-group {
+  margin-bottom: 24px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+}
+
+.input-group input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #1db954;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Sheet View */
+.sheet-view-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sheet-toolbar {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* 
+ * A3 Sheet layout rules
+ * A3 Dimensions: 297mm x 420mm (11.7in x 16.5in)
+ * Polaroid dimensions requested: 5.94cm x 8.4cm
+ */
+
+.a3-sheet-wrapper {
+  background: white;
+  /* To simulate A3 aspect ratio (420/297 = 1.414) */
+  width: 29.7cm;
+  height: 42cm;
+  max-width: 100%;
+  aspect-ratio: 297 / 420;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.a3-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  width: 100%;
+  height: 100%;
+}
+
+/* 
+ * Each cell is ~5.94cm x 8.4cm on an A3 sheet.
+ * We center the 5.5cm x 8.0cm slot inside the cell,
+ * creating an even margin around each polaroid for cutting.
+ */
+.grid-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-slot {
+  position: relative;
+  width: 5.5cm;
+  height: 8.0cm;
+  border: 1px dashed rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  cursor: pointer;
+  transition: background 0.2s;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.grid-slot:hover {
+  background: #f0f0f0;
+}
+
+.grid-slot.empty::before {
+  content: "+";
+  font-size: 2rem;
+  color: #ccc;
+  font-weight: 300;
+}
+
+.grid-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.slot-actions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.grid-slot:not(.empty):hover .slot-actions {
+  opacity: 1;
+}
+
+.slot-actions button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-edit-slot {
+  background: white;
+  color: black;
+}
+
+.btn-update-slot {
+  background: #2b2a3a;
+  color: white;
+}
+
+.btn-copy-slot {
+  background: #1db954;
+  color: white;
+}
+
+.btn-paste-slot {
+  background: #1db954;
+  color: white;
+}
+
+.btn-delete-slot {
+  background: #ff4444;
+  color: white;
+}
+
+/* Print Settings */
+@media print {
+  @page {
+    size: A3 portrait;
+    margin: 0;
+  }
+  
+  body {
+    background: white;
+  }
+
+  .sheet-toolbar,
+  .dashboard-container {
+    display: none !important;
+  }
+
+  .sheet-view-container {
+    padding: 0;
+    margin: 0;
+    width: 297mm;
+    height: 420mm;
+    display: block;
+  }
+
+  .a3-sheet-wrapper {
+    width: 297mm !important;
+    height: 420mm !important;
+    max-width: none;
+    box-shadow: none;
+    border: none;
+    margin: 0;
+  }
+  
+  .grid-cell {
+    /* Ensure the print also flex centers inside the exactly divided sheet */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .grid-slot {
+    border: none;
+    /* Print will respect the 5.5cm x 8.0cm explicitly */
+  }
+  
+  .grid-slot.empty {
+    background: transparent;
+  }
+  
+  .grid-slot.empty::before {
+    display: none;
+  }
+  
+  .slot-actions {
+    display: none !important;
+  }
+}

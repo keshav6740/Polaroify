@@ -99,6 +99,10 @@
             </svg>
           </a>
           <a class="btn-glass" href="#features">See Features</a>
+          <button id="openA3Btn" class="btn-glass" style="color: #1a1a1a; background: #1db954; font-weight: 600; border: none; align-items: center; display: inline-flex; justify-content: center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            A3 Sheets
+          </button>
         </div>
         <div class="hero-chips">
           <span class="chip"><span class="chip-dot green"></span>Spotify Linked</span>
@@ -395,6 +399,18 @@
         document.querySelectorAll('a[href="/generator.html"]').forEach((link) => {
           link.addEventListener('click', () => track('landing_open_studio_click', { source: 'landing' }));
         });
+
+        const openA3Btn = document.getElementById('openA3Btn');
+        if (openA3Btn) {
+          openA3Btn.addEventListener('click', () => {
+             const guess = prompt("Enter password to access A3 Sheets:");
+             if (guess === "Avnish@Polaroid") {
+                 window.location.href = "/a3.html";
+             } else if (guess !== null) {
+                 alert("Incorrect password.");
+             }
+          });
+        }
       })();
     </script>
 </body>

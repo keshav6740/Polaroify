@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A3 Sheets Dashboard - Polaroify</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/a3.css">
+</head>
+<body>
+    <!-- Dashboard View -->
+    <div id="dashboardView" class="dashboard-container">
+        <header class="dashboard-header">
+            <div>
+                <h1>A3 Sheets Dashboard</h1>
+                <p style="color: rgba(255,255,255,0.6); margin-top: 8px;">Manage your print-ready A3 collections (5x5 grid).</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <a href="/" class="btn-secondary">← Back Home</a>
+                <button id="btnNewSheet" class="btn-primary">+ Create New Sheet</button>
+            </div>
+        </header>
+
+        <main id="sheetsGrid" class="sheets-grid">
+            <!-- Sheet cards rendered here -->
+            <p id="emptyState" style="color: rgba(255,255,255,0.5); grid-column: 1 / -1; text-align: center; padding: 40px;">No A3 sheets created yet. Click "Create New Sheet" to start.</p>
+        </main>
+    </div>
+
+    <!-- Single Sheet View -->
+    <div id="sheetView" class="sheet-view-container" style="display: none;">
+        <div class="sheet-toolbar">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <button id="btnBackToDashboard" class="btn-secondary">← Back</button>
+                <h2 id="currentSheetTitle" style="margin: 0; font-size: 1.5rem;">Sheet Name</h2>
+                <span id="currentSheetCount" style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">0/25 slots filled</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button id="btnPrintSheet" class="btn-primary">🖨️ Print A3 Sheet</button>
+            </div>
+        </div>
+
+        <div class="a3-sheet-wrapper">
+            <div id="a3Grid" class="a3-grid">
+                <!-- 25 slots will be generated here by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Rename Modal -->
+    <div id="sheetModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modalTitle">Create New Sheet</h2>
+            <div class="input-group">
+                <label for="sheetNameInput">Sheet Name</label>
+                <input type="text" id="sheetNameInput" placeholder="e.g. Batch 1, Client Orders">
+            </div>
+            <div class="modal-actions">
+                <button id="btnCancelModal" class="btn-secondary">Cancel</button>
+                <button id="btnSaveSheet" class="btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/a3.js"></script>
+</body>
+</html>
