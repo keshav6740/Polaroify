@@ -1822,6 +1822,16 @@ html.theme-transition .poster {
     width: 92vw;
   }
 
+  .export-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .export-actions .btn {
+    width: 100%;
+  }
+
   .preview-wrap {
     position: sticky;
     top: max(0px, var(--safe-top));

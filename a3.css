@@ -403,3 +403,38 @@ body {
     display: none !important;
   }
 }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .dashboard-container {
+    padding: 24px 16px;
+  }
+  
+  .sheet-view-container {
+    padding: 16px 8px;
+    /* Wrap the grid in a scrollable view so it retains precise scale */
+    width: 100vw;
+    overflow-x: auto;
+    align-items: flex-start;
+  }
+
+  .sheet-toolbar {
+    padding: 0 16px;
+    width: max-content;
+    min-width: 100%;
+    position: sticky;
+    left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .dashboard-header .btn-primary {
+    justify-content: center;
+  }
+}

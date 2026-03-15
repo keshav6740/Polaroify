@@ -204,9 +204,15 @@ async function renderGrid(sheetId) {
                 pasteBtn.textContent = 'Paste Here';
                 pasteBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const copiedData = JSON.parse(localStorage.getItem(COPY_STORAGE_KEY));
-                    await db.saveSlot(sheetId, i, copiedData.dataUrl, copiedData.snapshot);
-                    renderGrid(sheetId);
+                    try {
+                        const copiedData = JSON.parse(localStorage.getItem(COPY_STORAGE_KEY));
+                        if (!copiedData || !copiedData.dataUrl) throw new Error("Invalid clipboard data");
+                        await db.saveSlot(sheetId, i, copiedData.dataUrl, copiedData.snapshot);
+                        renderGrid(sheetId);
+                    } catch (err) {
+                        alert("Failed to paste: the copied data is corrupted or missing.");
+                        console.error("Paste error", err);
+                    }
                 });
                 actionsDiv.appendChild(pasteBtn);
             }
@@ -302,7 +308,10 @@ els.btnPrintSheet.addEventListener('click', () => {
 
 els.btnSaveSheet.addEventListener('click', async () => {
     const name = els.sheetNameInput.value.trim();
-    if (!name) return;
+    if (!name) {
+        alert("Please enter a name for the sheet.");
+        return;
+    }
 
     if (editingSheetId) {
         const sheet = await db.getSheet(editingSheetId);

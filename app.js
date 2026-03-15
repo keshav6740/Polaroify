@@ -1728,7 +1728,10 @@ async function savePolaroidToA3Slot() {
 }
 
 async function renderPosterBlob(options = {}) {
-  const scale = Number(options.scale) > 0 ? Number(options.scale) : 2;
+  // Multiply the base scale by devicePixelRatio to ensure 
+  // high-density screens (mobiles/macs) don't output blurry PNGs.
+  const dpr = window.devicePixelRatio || 1;
+  const scale = (Number(options.scale) > 0 ? Number(options.scale) : 2) * dpr;
   const watermarkText = String(options.watermarkText || "").trim();
   const watermarkOpacity = Number(options.watermarkOpacity || 0.18);
 

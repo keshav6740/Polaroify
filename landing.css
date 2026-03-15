@@ -1065,6 +1065,14 @@ button {
     transform: scale(0.62);
     min-height: 340px;
   }
+  
+  .pwd-input-group {
+    flex-direction: column;
+  }
+  
+  .pwd-btn {
+    padding: 0.85rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
