@@ -190,6 +190,7 @@ async function renderGrid(sheetId) {
                     renderGrid(sheetId);
                 }
             });
+        } else {
             slotEl.classList.add('empty');
             let actionsHtml = '';
             
