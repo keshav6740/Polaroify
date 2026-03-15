@@ -373,6 +373,9 @@ body {
     width: 297mm;
     height: 420mm;
     display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 
   .a3-sheet-wrapper {
@@ -382,6 +385,9 @@ body {
     box-shadow: none;
     border: none;
     margin: 0;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    overflow: hidden;
   }
   
   .grid-cell {

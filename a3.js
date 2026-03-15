@@ -303,7 +303,10 @@ els.btnBackToDashboard.addEventListener('click', () => {
     }, 10);
 });
 els.btnPrintSheet.addEventListener('click', () => {
-    window.print();
+    // Prevent UI lock-up (INP issue) by deferring the print dialog
+    setTimeout(() => {
+        window.print();
+    }, 100);
 });
 
 els.btnSaveSheet.addEventListener('click', async () => {
