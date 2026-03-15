@@ -331,6 +331,11 @@ body {
   color: white;
 }
 
+.btn-upload-slot {
+  background: #2b2a3a;
+  color: white;
+}
+
 .btn-paste-slot {
   background: #1db954;
   color: white;

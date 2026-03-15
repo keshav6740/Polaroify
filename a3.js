@@ -190,30 +190,62 @@ async function renderGrid(sheetId) {
                     renderGrid(sheetId);
                 }
             });
-        } else {
             slotEl.classList.add('empty');
+            let actionsHtml = '';
+            
             if (hasCopied) {
-                slotEl.innerHTML = `
-                    <div class="slot-actions" style="opacity: 1; background: transparent;">
-                        <button class="btn-paste-slot">Paste Here</button>
-                        <button class="btn-edit-slot" style="margin-top: 8px;">Create New</button>
-                    </div>
+                actionsHtml = `
+                    <button class="btn-paste-slot">Paste Here</button>
+                    <button class="btn-upload-slot" style="margin-top: 8px;">Upload Image</button>
+                    <button class="btn-edit-slot" style="margin-top: 8px;">Create New</button>
                 `;
+            } else {
+                actionsHtml = `
+                    <button class="btn-upload-slot" style="margin-bottom: 8px;">Upload Image</button>
+                    <button class="btn-edit-slot">Create New</button>
+                `;
+            }
+            
+            slotEl.innerHTML = `
+                <div class="slot-actions" style="opacity: 1; background: transparent; pointer-events: auto;">
+                    ${actionsHtml}
+                </div>
+                <input type="file" class="hidden-upload" accept="image/png, image/jpeg, image/jpg" style="display:none;" />
+            `;
+            
+            const fileInput = slotEl.querySelector('.hidden-upload');
+
+            if (hasCopied) {
                 slotEl.querySelector('.btn-paste-slot').addEventListener('click', async (e) => {
                     e.stopPropagation();
                     const copiedData = JSON.parse(localStorage.getItem(COPY_STORAGE_KEY));
                     await db.saveSlot(sheetId, i, copiedData.dataUrl, copiedData.snapshot);
                     renderGrid(sheetId);
                 });
-                slotEl.querySelector('.btn-edit-slot').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    goToGenerator(sheetId, i);
-                });
-            } else {
-                slotEl.addEventListener('click', () => {
-                    goToGenerator(sheetId, i);
-                });
             }
+
+            slotEl.querySelector('.btn-edit-slot').addEventListener('click', (e) => {
+                e.stopPropagation();
+                goToGenerator(sheetId, i);
+            });
+            
+            slotEl.querySelector('.btn-upload-slot').addEventListener('click', (e) => {
+                e.stopPropagation();
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = async (event) => {
+                        // User uploaded image directly. No 'snapshot' associated.
+                        await db.saveSlot(sheetId, i, event.target.result, null);
+                        renderGrid(sheetId);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
         }
         
         cellEl.appendChild(slotEl);
