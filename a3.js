@@ -175,12 +175,14 @@ async function renderGrid(sheetId) {
 
             slotEl.querySelector('.btn-copy-slot').addEventListener('click', (e) => {
                 e.stopPropagation();
-                localStorage.setItem(COPY_STORAGE_KEY, JSON.stringify({
-                    dataUrl: slotData.dataUrl,
-                    snapshot: slotData.snapshot
-                }));
-                alert("Polaroid copied! You can now paste it into any empty slot.");
-                renderGrid(sheetId); // Re-render to show paste buttons
+                setTimeout(() => {
+                    localStorage.setItem(COPY_STORAGE_KEY, JSON.stringify({
+                        dataUrl: slotData.dataUrl,
+                        snapshot: slotData.snapshot
+                    }));
+                    alert("Polaroid copied! You can now paste it into any empty slot.");
+                    renderGrid(sheetId); // Re-render to show paste buttons
+                }, 10);
             });
 
             slotEl.querySelector('.btn-delete-slot').addEventListener('click', (e) => {
