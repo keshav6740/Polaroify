@@ -28,7 +28,7 @@
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
-  --poster-print-ratio: 5.5 / 8.5;
+  --poster-print-ratio: 5.5 / 8.4;
   --poster-base-width: 430px;
   --poster-base-height: calc(var(--poster-base-width) / var(--poster-print-ratio));
 }
